@@ -1,0 +1,15 @@
+Flask
+Flask-SQLAlchemy
+Flask-WTF
+Jinja2
+MarkupSafe
+SQLAlchemy
+WTForms
+Werkzeug
+itsdangerous
+wsgiref
+Flask-Login
+mysql-python
+pyPdf2
+reportlab
+xhtml2pdf

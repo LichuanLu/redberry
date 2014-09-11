@@ -1,4 +1,2 @@
-redberry
-========
-
-blueberry version 2
+blueberry
+=========

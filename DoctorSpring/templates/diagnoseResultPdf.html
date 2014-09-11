@@ -1,0 +1,67 @@
+<html>
+<head>
+   <style>
+    @font-face {
+    font-family: msyh;
+    src: url(/static/font/msyh.ttf);
+    }
+    body{
+        font-family: msyh;
+    }
+
+    </style>
+</head>
+<body>
+{% block body %}
+<div width="100%" style="text-align:center;">
+<h2 style="font-size:20pt;font-weight: 700">检查报告单</h2>
+</div>
+<div width="100%" style="text-align: right;">
+   <h4>诊断日期：{{data.createDate}}</h4>
+   <h4>影像号：{{data.seriesNumber}}</h4>
+</div>
+
+
+<hr style="margin: 1em 0;"/>
+<div width="100%">
+    <span style="margin-right: 5em">{{data.name}}
+    </span>
+    <span style="margin-right: 5em">
+        {%if data.gender==0 %}
+        男
+        {% else %}
+        女
+        {% endif %}
+    </span>
+    <span style="margin-right: 5em">{{data.birthDate}}</span>
+</div>
+<hr style="margin: 1em 0;"/>
+<h4>部位：{{data.postions}}</h4>
+<div width="100%" style="margin-top: 2em;">
+    <h4>影像描述：</h4>
+     <p width="100%" style="margin-left:2em;margin-bottom: 1em;word-wrap:CJK;">
+         {{data.imageDesc}}
+     </p>
+    <h4>诊断意见：</h4>
+    <P width="100%" style="margin-left:2em;margin-bottom: 1em;word-wrap:CJK;">
+    {{data.diagnoseDesc}}
+    </p>
+
+</div>
+<table width="100%" cellpadding="4" cellspacing="0" style="margin-top: 2em;">
+
+    <tbody>
+    <tr>
+        <td width="50%">
+            <h3 style="text-align: center;">诊断医师：{{data.doctorName}}</h3>
+        </td>
+
+    </tr>
+    </tbody>
+</table>
+
+
+<hr style="margin: 3em 0;"/>
+{% endblock %}
+</body>
+</html>

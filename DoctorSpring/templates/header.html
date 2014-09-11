@@ -1,0 +1,65 @@
+<div id="header-region" class="full-width">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-lg-6 no-right-padding">
+
+                <nav class="navbar navbar-default">
+                    <div class="collapse navbar-collapse">
+                        <ul class="nav navbar-nav gray-base">
+                            <li class="active">
+                                <a href="/homepage">主页</a>
+                            </li>
+                            <li>
+                                <a href="/doctor/list">专家库</a>
+                            </li>
+                            <li>
+                                <a href="/help/center">客服中心</a>
+                            </li>
+
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+            <div class="col-md-6 col-lg-6 nopadding login-wrap">
+                {% if session['logged_in'] %}
+                <div class="login-group">
+                <span>您好</span>
+                <span class="username">{{session['username'] }}</span>
+                <a id="usercenter-link" href="/userCenter/{{session['userId']}}">
+                    <span class="fui-user"></span>
+                    <span>个人中心</span>
+                </a>
+                <a id="user-message-link" href="/userCenter/{{session['userId']}}">
+                    <span class="visible-md visible-lg message-icon-wrap">
+                        <span class="fui-mail">
+                            {% if data and data.messageCount %}
+                            <span class="iconbar-unread">
+
+                                      {{data.messageCount}}
+
+                            </span>
+                            {% endif %}
+                        </span>
+                    </span>
+                    消息
+                </a>
+                <a id="logout-link" href="/logout">
+                    <span>登出</span>
+                </a>
+                </div>
+
+                {% else %}
+                <div class="unlogin-group">
+                <a id="login-link" href="#" data-toggle="modal" data-target=".login-modal">
+                    <span>登陆</span>
+                </a>
+                <div class="bullet"></div>
+                <a id="register-link" href="/register/patient">
+                    <span>注册</span>
+                </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

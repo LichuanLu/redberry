@@ -1,0 +1,12 @@
+
+.*.sw?
+*.pyc
+*.pyo
+.DS_Store
+
+
+*.log
+*.iml
+.idea
+
+DoctorSpring/static
