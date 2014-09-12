@@ -47,7 +47,9 @@
 						</div>
 
 						<div class="btn-wrapper">
-							<button type="submit" class="btn btn-info submit-btn">保存并继续</button>
+                            <button id="submitBtn1" type="submit" nams="op" class="btn btn-info submit-btn ladda-button" data-style="expand-right">
+                                <span class="ladda-label">保存并继续</span>
+                            </button>
 
 						</div>
 					</form>
@@ -204,7 +206,9 @@
 					</div>
 
 					<div class="btn-wrapper">
-						<button type="submit" class="btn btn-info submit-btn">保存并继续</button>
+                        <button id="submitBtn2" type="submit" nams="op" class="btn btn-info submit-btn ladda-button" data-style="expand-right">
+                            <span class="ladda-label">保存并继续</span>
+                        </button>
 
 					</div>
 				</form>
@@ -369,7 +373,12 @@
 					
 				    </form>
 				<div class="btn-wrapper">
-					<button type="submit" class="btn btn-info submit-btn">保存并继续</button>
+                    <button id="submitBtn3" type="submit" nams="op" class="btn btn-info submit-btn ladda-button" data-style="expand-right">
+                        <span class="ladda-label">保存并继续</span>
+                    </button>
+                    <button id="submitPendingBtn3" type="submit" style="display:none;" class="btn btn-warning submit-btn ladda-button" data-style="expand-right" disabled>
+                        <span class="ladda-label">等待文件上传</span>
+                    </button>
 
 				</div>
 			</div>
@@ -515,8 +524,12 @@
 				</form>
 				<p class="apply-warning-text">请详细检查您申请的请求并确保您已经提供了需要的信息</p>
 				<div class="btn-wrapper">
-					<button type="submit" class="btn btn-info submit-btn">最终提交申请</button>
-
+                    <button id="submitBtn4" type="submit" nams="op" class="btn btn-info submit-btn ladda-button" data-style="expand-right">
+                        <span class="ladda-label">最终提交申请</span>
+                    </button>
+                    <button id="submitPendingBtn4" type="submit" style="display:none;" class="btn btn-warning submit-btn ladda-button" data-style="expand-right" disabled>
+                        <span class="ladda-label">等待文件上传</span>
+                    </button>
 				</div>
 
 			</div>
