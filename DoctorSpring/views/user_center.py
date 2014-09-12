@@ -57,25 +57,29 @@ def endterDoctorHome():
 
 @uc.route('/patienthome',  methods = ['GET', 'POST'])
 def endterPatientHome():
-    userId=session['userId']
-    user=User.getById(userId)
+    if session.has_key('userId'):
+        userId=session['userId']
+        user=User.getById(userId)
 
-    if user is None:
-        return redirect(ERROR_URL)
+        if user is None:
+            return redirect(ERROR_URL)
 
-    resultDate={}
-    messageCount=Message.getMessageCountByReceiver(userId)
-    resultDate['messageCount']=messageCount
+        resultDate={}
+        messageCount=Message.getMessageCountByReceiver(userId)
+        resultDate['messageCount']=messageCount
 
-    diagnoseCount=Diagnose.getNewDiagnoseCountByUserId(userId)
-    resultDate['diagnoseCount']=diagnoseCount
+        diagnoseCount=Diagnose.getNewDiagnoseCountByUserId(userId)
+        resultDate['diagnoseCount']=diagnoseCount
 
-    resultDate['user']=user
-    #pager=Pagger(1,20)
-    # diagnoses=Diagnose.getDiagnosesByDoctorId(db_session,doctor.id,pager)
-    # diagnoseDict=dataChangeService.userCenterDiagnoses(diagnoses)
-    # resultDate['diagnoses']=diagnoseDict
-    return render_template("patientHome.html",data=resultDate)
+        resultDate['user']=user
+        #pager=Pagger(1,20)
+        # diagnoses=Diagnose.getDiagnosesByDoctorId(db_session,doctor.id,pager)
+        # diagnoseDict=dataChangeService.userCenterDiagnoses(diagnoses)
+        # resultDate['diagnoses']=diagnoseDict
+        return render_template("patientHome.html",data=resultDate)
+    else:
+        return redirect(LOGIN_URL)
+
 
 @uc.route('/hospital/user',  methods = ['GET', 'POST'])
 def endterHospitalUserHome():
