@@ -4,7 +4,7 @@ __author__ = 'jeremyxu'
 import unittest
 from DoctorSpring.models import Skill, Location, User, Doctor, Hospital, Department, Patient, Doctor2Skill ,Position, UserRole, DoctorProfile
 from DoctorSpring.util.constant import UserStatus, RoleId, DoctorProfileType, DoctorType
-from database import db_session as session
+from database import Base,db_session as session
 from DoctorSpring.models.comment import Comment
 
 class RoleTestCase(unittest.TestCase):
