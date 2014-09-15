@@ -239,7 +239,7 @@ class Diagnose(Base):
                 .filter(Diagnose.uploadUserId==uploadUserId,Diagnose.status.in_((DiagnoseStatus.Draft,DiagnoseStatus.NeedUpdate))).offset(pagger.getOffset()).limit(pagger.getLimitCount())
         else:
             query=session.query(Diagnose).select_from(join(Patient,Diagnose,Patient.id==Diagnose.patientId)) \
-                .filter(Patient.realname==patientName,Diagnose.status.in_((DiagnoseStatus.NeedTriage,DiagnoseStatus.NeedUpdate)),Diagnose.uploadUserId==uploadUserId).offset(pagger.getOffset()).limit(pagger.getLimitCount())
+                .filter(Patient.realname==patientName,Diagnose.status.in_((DiagnoseStatus.Draft,DiagnoseStatus.NeedUpdate)),Diagnose.uploadUserId==uploadUserId).offset(pagger.getOffset()).limit(pagger.getLimitCount())
 
         return query.all()
 
