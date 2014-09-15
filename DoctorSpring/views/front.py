@@ -110,6 +110,15 @@ def applyDiagnose():
     return render_template("applyDiagnose.html", result=data)
 
 
+def checkFilesExisting(new_diagnose):
+    dicomCount = File.getFileCountbypathologyId(new_diagnose.pathologyId, FileType.Dicom)
+    if dicomCount > 0:
+        otherCount = File.getFileCountbypathologyId(new_diagnose.pathologyId, FileType.FileAboutDiagnose)
+        if otherCount>0:
+            return True
+    return False
+
+
 @front.route('/save/diagnose/<formid>', methods=['GET', 'POST'])
 def applyDiagnoseForm(formid):
     if (int(formid) == 1) :
@@ -242,14 +251,19 @@ def applyDiagnoseForm(formid):
 
                     new_patient = Patient.get_patient_by_id(new_diagnose.patientId)
                     new_patient.status = PatientStatus.diagnose
-                    new_diagnose.ossUploaded=constant.DiagnoseUploaed.Uploaded
-                    new_diagnose.status = DiagnoseStatus.NeedPay
-                    Diagnose.save(new_diagnose)
-                    new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
-                    DiagnoseLog.save(db_session, new_diagnoselog)
-                    #产生alipay，发送短消息
-                    userId= session.get('userId')
-                    sendAllMessage(userId,new_diagnose)
+                    #hospitalUser type=1
+                    if form.type=='1' and not checkFilesExisting(new_diagnose):
+                        new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
+                        DiagnoseLog.save(db_session, new_diagnoselog)
+                    else:
+                        new_diagnose.ossUploaded=constant.DiagnoseUploaed.Uploaded
+                        new_diagnose.status = DiagnoseStatus.NeedPay
+                        Diagnose.save(new_diagnose)
+                        new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
+                        DiagnoseLog.save(db_session, new_diagnoselog)
+                        #产生alipay，发送短消息
+                        userId= session.get('userId')
+                        sendAllMessage(userId,new_diagnose)
 
                 else:
                     form_result = ResultStatus(FAILURE.status, "找不到上步的草稿1")

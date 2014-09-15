@@ -87,6 +87,7 @@ class DiagnoseForm2(object):
     pathologyId = None
     exist = False
     diagnoseId = None
+    type=None
     def __init__(self, args):
         if 'pathologyId' in args.keys():
             self.pathologyId = args.get('pathologyId')
@@ -98,7 +99,7 @@ class DiagnoseForm2(object):
         self.dicomtype = args.get('dicomtype')
         self.fileurl = [args.get('fileid')]
 
-        self.type=args.get('type')
+        self.type=args.get('isHospitalUser')
 
     def validate(self):
         try:
@@ -126,12 +127,15 @@ class DiagnoseForm4(object):
     illnessHistory = None
     fileurl = None
     diagnoseId = None
+    type=None
     def __init__(self, args):
         if 'diagnoseId' in args.keys():
             self.diagnoseId = args.get('diagnoseId')
         self.hospitalId = int(args.get('hospitalId'))
         self.illnessHistory = args.get('illnessHistory')
         self.fileurl = args.getlist('fileid')
+        self.type=args.get("isHospitalUser")
+
     def validate(self):
         try:
             if self.hospitalId is None:
@@ -140,9 +144,10 @@ class DiagnoseForm4(object):
             if self.illnessHistory is None:
                 failure = ResultStatus(FAILURE.status, "请填写病史信息")
                 return failure
-            if self.fileurl is None:
-                failure = ResultStatus(FAILURE.status, "请上传有效的诊断书")
-                return failure
+            if self.type is None or self.type=='0':
+                if self.fileurl is None:
+                    failure = ResultStatus(FAILURE.status, "请上传有效的诊断书")
+                    return failure
         except Exception, e:
             return FAILURE
         return SUCCESS

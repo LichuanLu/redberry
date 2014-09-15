@@ -530,6 +530,14 @@ class File(Base):
                 query = query.filter(File.type == type)
 
             return query.all()
+    @classmethod
+    def getFileCountbypathologyId(cls, pathologyId, type=None):
+        if pathologyId:
+            query = session.query(File).filter(File.pathologyId == pathologyId, File.status==ModelStatus.Normal)
+            if type is not None:
+                query = query.filter(File.type == type)
+
+            return query.count()
 
     @classmethod
     def getDicomFileUrl(cls,pathologyId):
