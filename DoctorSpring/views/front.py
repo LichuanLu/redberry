@@ -314,7 +314,7 @@ def fileUpload():
                             diagnoseChange=Diagnose()
                             diagnoseChange.id=diagnoseId
                             diagnoseChange.ossUploaded=constant.DiagnoseUploaed.Uploaded
-                            diagnoseChange.status=constant.DiagnoseStatus.NeedPay
+                            #diagnoseChange.status=constant.DiagnoseStatus.NeedPay
                             diagnose.uploadUserId=userId
                             Diagnose.update(diagnoseChange)
                             sendAllMessage(userId,diagnose)
@@ -324,7 +324,7 @@ def fileUpload():
                             diagnoseChange=Diagnose()
                             diagnoseChange.id=diagnoseId
                             diagnoseChange.ossUploaded=constant.DiagnoseUploaed.Uploaded
-                            diagnoseChange.status=constant.DiagnoseStatus.NeedPay
+                            #diagnoseChange.status=constant.DiagnoseStatus.NeedPay
                             diagnose.uploadUserId=userId
                             Diagnose.update(diagnoseChange)
                             sendAllMessage(userId,diagnose)
