@@ -216,11 +216,11 @@ def applyDiagnoseForm(formid):
                     PathologyPostion.save(new_position_id)
 
                 File.cleanDirtyFile(form.fileurl, new_pathology.id, FileType.Dicom)
-                for fileurl in form.fileurl:
-                    new_file = File.getFilebyId(int(fileurl))
-                    new_file.pathologyId = new_pathology.id
-                    File.save(new_file)
-
+                if form.fileurl and len(form.fileurl) > 0:
+                    for fileurl in form.fileurl:
+                        new_file = File.getFilebyId(int(fileurl))
+                        new_file.pathologyId = new_pathology.id
+                        File.save(new_file)
                 new_diagnose.pathologyId = new_pathology.id
                 Diagnose.save(new_diagnose)
                 form_result.data = {'formId': 4}
@@ -244,10 +244,11 @@ def applyDiagnoseForm(formid):
                     Pathology.save(new_pathology)
 
                     File.cleanDirtyFile(form.fileurl, new_pathology.id, FileType.FileAboutDiagnose)
-                    for fileurl in form.fileurl:
-                        new_file = File.getFilebyId(int(fileurl))
-                        new_file.pathologyId = new_pathology.id
-                        File.save(new_file)
+                    if form.fileurl and len(form.fileurl) > 0:
+                        for fileurl in form.fileurl:
+                            new_file = File.getFilebyId(int(fileurl))
+                            new_file.pathologyId = new_pathology.id
+                            File.save(new_file)
 
                     new_patient = Patient.get_patient_by_id(new_diagnose.patientId)
                     new_patient.status = PatientStatus.diagnose

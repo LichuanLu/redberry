@@ -97,7 +97,8 @@ class DiagnoseForm2(object):
         self.patientid = args.get('patientId')
         self.patientlocation = args.getlist('patientlocation')
         self.dicomtype = args.get('dicomtype')
-        self.fileurl = [args.get('fileid')]
+        if args.get('fileid'):
+            self.fileurl = [args.get('fileid')]
 
         self.type=args.get('isHospitalUser')
 
