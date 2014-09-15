@@ -794,7 +794,8 @@ def getMobileVerifyCode():
             telPhoneNo=user.phone
         if telPhoneNo:
             smsRc=sms_utils.RandCode()
-            smsRc.send_emp_sms(telPhoneNo)
+            template_param = {'param1':verifyCode}
+            smsRc.send_emp_sms(telPhoneNo,smsRc.TEMPLATE_ID_1,template_param)
             return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
         else:
             LOG.error("诊断[%s]发送验证码错误"%diagnoseId)

@@ -339,7 +339,7 @@ def fileUpload():
             return jsonify(files=file_infos)
     except Exception,e:
         LOG.error( e.message)
-        return redirect(ERROR_URL)
+        return jsonify({'code': 1,  'message' : "上传出错", 'data': ''})
 #包括诊断消息,和发短信
 def sendAllMessage(userId,diagnose):
     payUrl=generateAliPay(userId,None,diagnose)
@@ -410,7 +410,8 @@ def sendMobileMessage(userId,diagnoseId,diagnose=None,message=None):
         telPhoneNo=user.phone
     if telPhoneNo:
         smsRc=sms_utils.RandCode()
-        smsRc.send_emp_sms(telPhoneNo)
+        template_param = {'param1':'243455'}
+        smsRc.send_emp_sms(telPhoneNo,smsRc.TEMPLATE_ID_1,template_param)
 @front.route('/file/disable', methods=['POST','GET'])
 @login_required
 def disableFile():
