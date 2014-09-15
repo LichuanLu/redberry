@@ -260,8 +260,7 @@ def applyDiagnoseForm(formid):
                         new_diagnose.ossUploaded=constant.DiagnoseUploaed.Uploaded
                         new_diagnose.status = DiagnoseStatus.NeedPay
                         Diagnose.save(new_diagnose)
-                        new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
-                        DiagnoseLog.save(db_session, new_diagnoselog)
+
                         #产生alipay，发送短消息
                         userId= session.get('userId')
                         sendAllMessage(userId,new_diagnose)
@@ -318,6 +317,7 @@ def fileUpload():
                             diagnoseChange.status=constant.DiagnoseStatus.NeedPay
                             diagnose.uploadUserId=userId
                             Diagnose.update(diagnoseChange)
+                            sendAllMessage(userId,diagnose)
                     if type==FileType.FileAboutDiagnose:
                         filesAboutDiagnose=File.getFiles(diagnose.pathologyId,FileType.Dicom)
                         if filesAboutDiagnose and len(filesAboutDiagnose)>0:
@@ -327,7 +327,7 @@ def fileUpload():
                             diagnoseChange.status=constant.DiagnoseStatus.NeedPay
                             diagnose.uploadUserId=userId
                             Diagnose.update(diagnoseChange)
-                    sendAllMessage(userId,diagnose)
+                            sendAllMessage(userId,diagnose)
 
 
                     file_infos.append(dict(id=new_file.id,
@@ -342,6 +342,8 @@ def fileUpload():
         return jsonify({'code': 1,  'message' : "上传出错", 'data': ''})
 #包括诊断消息,和发短信
 def sendAllMessage(userId,diagnose):
+    new_diagnoselog = DiagnoseLog(diagnose.uploadUserId, diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
+    DiagnoseLog.save(db_session, new_diagnoselog)
     payUrl=generateAliPay(userId,None,diagnose)
     if payUrl:
         sendMobileMessage(userId,diagnose.id,diagnose,payUrl)
