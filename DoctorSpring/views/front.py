@@ -317,7 +317,9 @@ def fileUpload():
                             #diagnoseChange.status=constant.DiagnoseStatus.NeedPay
                             diagnose.uploadUserId=userId
                             Diagnose.update(diagnoseChange)
-                            sendAllMessage(userId,diagnose)
+                            #sendAllMessage(userId,diagnose)需要提交了才能发信息h
+                            new_diagnoselog = DiagnoseLog(diagnose.uploadUserId, diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
+                            DiagnoseLog.save(db_session, new_diagnoselog)
                     if type==FileType.FileAboutDiagnose:
                         filesAboutDiagnose=File.getFiles(diagnose.pathologyId,FileType.Dicom)
                         if filesAboutDiagnose and len(filesAboutDiagnose)>0:
@@ -327,7 +329,9 @@ def fileUpload():
                             #diagnoseChange.status=constant.DiagnoseStatus.NeedPay
                             diagnose.uploadUserId=userId
                             Diagnose.update(diagnoseChange)
-                            sendAllMessage(userId,diagnose)
+                            #sendAllMessage(userId,diagnose)
+                            new_diagnoselog = DiagnoseLog(diagnose.uploadUserId, diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
+                            DiagnoseLog.save(db_session, new_diagnoselog)
 
 
                     file_infos.append(dict(id=new_file.id,
