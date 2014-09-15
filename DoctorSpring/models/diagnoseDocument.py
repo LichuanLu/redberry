@@ -549,6 +549,14 @@ class File(Base):
             for file in files:
                 if not unicode(file.id) in fileIds:
                         file.status = ModelStatus.Del
+    @classmethod
+    def deleteFileByPathologyId(cls,pathologyId,type=constant.FileType.Dicom):
+        if pathologyId is None or pathologyId<1:
+            return
+        result=session.query(File).filter(File.pathologyId==pathologyId,File.type==type).update({
+            File.status:ModelStatus.Del
+        })
+        return result
 
 
 

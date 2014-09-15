@@ -10,7 +10,7 @@ from DoctorSpring.models.patient import Patient
 from DoctorSpring.models.hospital import Hospital
 
 from DoctorSpring.models.pathology import *
-from DoctorSpring.models.diagnoseDocument import Diagnose ,Report,DiagnoseTemplate
+from DoctorSpring.models.diagnoseDocument import Diagnose ,Report,DiagnoseTemplate ,File
 from database import db_session as session
 from datetime import  datetime
 from DoctorSpring.util.constant import Pagger,DoctorProfileType
@@ -25,6 +25,12 @@ class CommentTestCase(unittest.TestCase):
         diagnoseComment=Comment(1,1,1,"诊断很不错，非常感谢")
         session.add(diagnoseComment)
         session.commit()
+
+class FileTestCase(unittest.TestCase):
+
+    def test_deleteFilesBypathologyId(self):
+        result=File.deleteFileByPathologyId(6)
+        print result
 
 class UserTestCase(unittest.TestCase):
     def test_addUser(self):

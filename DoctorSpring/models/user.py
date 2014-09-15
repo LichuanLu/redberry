@@ -108,6 +108,7 @@ class User(Base):
                 user.password=passwd
             session.commit()
             session.flush()
+            return user
 
     @classmethod
     def get_name(cls, user):

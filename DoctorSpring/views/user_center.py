@@ -772,9 +772,68 @@ def doctorStatusChange():
         return json.dumps(rs.FAILURE.__dict__,ensure_ascii=False)
 
 
+@uc.route('/user/mobile/sendVerifyCode', methods=['GET','POST'])
+def getMobileVerifyCode():
+    try:
+        from DoctorSpring.util import verify_code,sms_utils
+        verifyCode= verify_code.generatorVerifyCode()
+        LOG.info("产生验证码")
+        session['verifyCode']=verifyCode
+        telPhoneNo=None
+        userId=session.get('userId')
+        diagnoseId=request.args.get('diagnoseId')
+
+        diagnose=Diagnose.getDiagnoseById(diagnoseId)
+
+        if diagnose and hasattr(diagnose,'patient') and diagnose.patient:
+            telPhoneNo=diagnose.patient.identityPhone
+            if telPhoneNo is None and hasattr(diagnose.patient,'user') and diagnose.patient.user:
+                telPhoneNo=diagnose.patient.user.phone
+        if telPhoneNo is None:
+            user=User.get_id(userId)
+            telPhoneNo=user.phone
+        if telPhoneNo:
+            smsRc=sms_utils.RandCode()
+            smsRc.send_emp_sms(telPhoneNo)
+            return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
+        else:
+            LOG.error("诊断[%s]发送验证码错误"%diagnoseId)
+            return json.dumps(rs.FAILURE.__dict__,ensure_ascii=False)
+
+    except Exception,e:
+        LOG.error(e.message)
+        return json.dumps(rs.FAILURE.__dict__,ensure_ascii=False)
 
 
-
-
-
-
+@uc.route('/user/mobile/update', methods=['GET','POST'])
+def checkVerifyCode():
+    code=request.args.get('verifyCode')
+    mobile=request.args.get('mobile')
+    verifyCode=session.get('verifyCode')
+    userId=session.get('userId')
+    if verifyCode is None:
+        result=rs.ResultStatus(rs.FAILURE.status,"请重新产生验证码")
+        return  json.dumps(result.__dict__,ensure_ascii=False)
+    if code is None:
+        result=rs.ResultStatus(rs.FAILURE.status,"验证码不能为空,请输入验证码")
+        return  json.dumps(result.__dict__,ensure_ascii=False)
+    if code == verifyCode:
+        if mobile:
+            import re
+            p = re.compile(r"((13|14|15|18)d{9}$)")
+            if p.match(mobile):
+                user=User.update(userId,None,mobile)
+                if user:
+                    return  json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
+                else:
+                    result=rs.ResultStatus(rs.FAILURE.status,"更新失败")
+                    return  json.dumps(result.__dict__,ensure_ascii=False)
+            else:
+                result=rs.ResultStatus(rs.FAILURE.status,"输入的电话号码格式有问题")
+                return  json.dumps(result.__dict__,ensure_ascii=False)
+        else:
+            result=rs.ResultStatus(rs.FAILURE.status,"请输入电话号码")
+            return  json.dumps(result.__dict__,ensure_ascii=False)
+    else:
+        result=rs.ResultStatus(rs.FAILURE.status,"验证码错误，请重新输入验证码")
+        return  json.dumps(result.__dict__,ensure_ascii=False)

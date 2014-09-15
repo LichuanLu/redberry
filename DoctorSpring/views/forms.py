@@ -98,6 +98,8 @@ class DiagnoseForm2(object):
         self.dicomtype = args.get('dicomtype')
         self.fileurl = [args.get('fileid')]
 
+        self.type=args.get('type')
+
     def validate(self):
         try:
             if self.pathologyId is not None:
@@ -108,9 +110,12 @@ class DiagnoseForm2(object):
             if self.dicomtype is None:
                 failure = ResultStatus(FAILURE.status, "请选择影像类型")
                 return failure
-            if self.fileurl is None:
-                failure = ResultStatus(FAILURE.status, "请上传有效的影音文件")
-                return failure
+            if self.type is None or self.type=='0':
+                if self.fileurl is None:
+                    failure = ResultStatus(FAILURE.status, "请上传有效的影像文件")
+                    return failure
+
+
         except Exception, e:
             return FAILURE
         return SUCCESS

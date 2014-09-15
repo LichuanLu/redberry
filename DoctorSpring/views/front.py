@@ -8,17 +8,22 @@ import data_change_service as dataChangeService
 from flask import request, redirect, url_for, Blueprint, jsonify, g, send_from_directory, session
 from flask import abort, render_template, flash
 from flask_login import login_required
-from DoctorSpring.models import Doctor, Hospital, Location, Skill, User, Position, Patient, Diagnose, Pathology, PathologyPostion, File, DiagnoseLog, Comment,UserRole,Message
+from DoctorSpring.models import Doctor, Hospital, Location, Skill, User, Position, Patient, Diagnose, Pathology, PathologyPostion, File, DiagnoseLog, Comment,UserRole,Message,AlipayLog
 from database import db_session
 from werkzeug.utils import secure_filename
 from forms import DiagnoseForm1, DoctorList, DiagnoseForm2, DiagnoseForm3, DiagnoseForm4
-from DoctorSpring.util import result_status as rs, object2dict, constant, oss_util
+from DoctorSpring.util import result_status as rs, object2dict, constant, oss_util ,sms_utils
 from datetime import datetime, date
 from DoctorSpring.util.constant import PatientStatus, Pagger, DiagnoseStatus, ModelStatus, FileType, DiagnoseLogAction, RoleId, UserStatus
 from DoctorSpring.util.authenticated import authenticated
 from DoctorSpring.util.result_status import *
+from DoctorSpring.util.pay import alipay
 import random
 import string
+from config import LOGIN_URL,ERROR_URL
+
+from DoctorSpring import app
+LOG=app.logger
 
 config = config.rec()
 front = Blueprint('front', __name__)
@@ -237,10 +242,15 @@ def applyDiagnoseForm(formid):
 
                     new_patient = Patient.get_patient_by_id(new_diagnose.patientId)
                     new_patient.status = PatientStatus.diagnose
+                    new_diagnose.ossUploaded=constant.DiagnoseUploaed.Uploaded
                     new_diagnose.status = DiagnoseStatus.NeedPay
                     Diagnose.save(new_diagnose)
                     new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
                     DiagnoseLog.save(db_session, new_diagnoselog)
+                    #产生alipay，发送短消息
+                    userId= session.get('userId')
+                    sendAllMessage(userId,new_diagnose)
+
                 else:
                     form_result = ResultStatus(FAILURE.status, "找不到上步的草稿1")
             else:
@@ -252,9 +262,9 @@ def applyDiagnoseForm(formid):
 
 UPLOAD_FOLDER = 'DoctorSpring/static/tmp/'
 ALLOWED_EXTENSIONS = set(['doc', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'html', 'zip', 'rar'])
-
+#upload file ,which will be used by hospitaluser ,even more hositaluser not use it where apply diagnose
 @front.route('/file/upload', methods=['POST'])
-def dicomfileUpload():
+def fileUpload():
     userId=session.get('userId')
     if userId is None:
         return redirect(LOGIN_URL)
@@ -290,6 +300,7 @@ def dicomfileUpload():
                             diagnoseChange=Diagnose()
                             diagnoseChange.id=diagnoseId
                             diagnoseChange.ossUploaded=constant.DiagnoseUploaed.Uploaded
+                            diagnoseChange.status=constant.DiagnoseStatus.NeedPay
                             diagnose.uploadUserId=userId
                             Diagnose.update(diagnoseChange)
                     if type==FileType.FileAboutDiagnose:
@@ -298,9 +309,137 @@ def dicomfileUpload():
                             diagnoseChange=Diagnose()
                             diagnoseChange.id=diagnoseId
                             diagnoseChange.ossUploaded=constant.DiagnoseUploaed.Uploaded
+                            diagnoseChange.status=constant.DiagnoseStatus.NeedPay
                             diagnose.uploadUserId=userId
                             Diagnose.update(diagnoseChange)
+                    sendAllMessage(userId,diagnose)
 
+
+                    file_infos.append(dict(id=new_file.id,
+                                           name=filename,
+                                           size=11,
+                                           url=fileurl))
+                else:
+                    return jsonify({'code': 1,  'message' : "error", 'data': ''})
+            return jsonify(files=file_infos)
+    except Exception,e:
+        LOG.error( e.message)
+        return redirect(ERROR_URL)
+#包括诊断消息,和发短信
+def sendAllMessage(userId,diagnose):
+    payUrl=generateAliPay(userId,None,diagnose)
+    if payUrl:
+        sendMobileMessage(userId,diagnose.id,diagnose,payUrl)
+        #诊断通知
+        content=dataChangeService.getPatienDiagnoseMessageContent(diagnose,"您好系统中有一个诊断需要支付才能继续进行，请先支付")
+        message=Message(constant.DefaultSystemAdminUserId,userId,'诊断通知',content,constant.MessageType.Diagnose)
+        message.url=payUrl
+        Message.save(message)
+#增加参数diagnose的目的是减少对数据库的请求
+def generateAliPay(userId,diagnoseId,diagnose=None):
+
+    if diagnose is None:
+        diagnose=Diagnose.getDiagnoseById(diagnoseId)
+    if userId is None:
+        LOG.warn("诊断生成阿里支付地址出错,用户未登录")
+
+    if isinstance(userId,basestring):
+        userId=string.atoi(userId)
+    if diagnose is None:
+        LOG.error("诊断[diagnoseId=%d]生成阿里支付地址出错,诊断在系统中不存在"%diagnoseId)
+
+    if diagnose and diagnose.uploadUserId!=userId:
+        if hasattr(diagnose,'patient') and string.atoi(userId)!=diagnose.patient.userID:
+            LOG.error("诊断[diagnoseId=%d][userId=%d]生成阿里支付地址出错,用户没有权限"%(diagnoseId,userId))
+
+    if diagnose and diagnose.status==constant.DiagnoseStatus.NeedPay and diagnose.ossUploaded==constant.DiagnoseUploaed.Uploaded:
+        alipayLog=AlipayLog(userId,diagnoseId,constant.AlipayLogAction.StartApplyAlipay)
+        AlipayLog.save(alipayLog)
+        description=None
+        needPay=None
+        if hasattr(diagnose,'pathology') and hasattr(diagnose.pathology,'pathologyPostions'):
+            if len(diagnose.pathology.pathologyPostions)>0:
+                needPay=constant.DiagnoseCost*len(diagnose.pathology.pathologyPostions)
+        needPay=constant.DiagnoseCost
+
+        if hasattr(diagnose,'doctor') and hasattr(diagnose.doctor,'username'):
+
+            description=' 医生(%s)的诊断费用:%f 元'%(diagnose.doctor.username,needPay)
+            if hasattr(diagnose.doctor.hospital,'name'):
+                description=diagnose.doctor.hospital.name+description
+        payUrl=alipay.create_direct_pay_by_user(diagnose.diagnoseSeriesNumber,diagnose.diagnoseSeriesNumber,'咨询费',needPay)
+        if payUrl:
+            alipayLog=AlipayLog(userId,diagnoseId,constant.AlipayLogAction.GetAlipayUrl)
+            alipayLog.description=description
+            alipayLog.payUrl=payUrl
+            AlipayLog.save(alipayLog)
+            LOG.info("诊断[diagnoseId=%d][userId=%d]生成阿里支付地址成功"%(diagnoseId,userId))
+            return payUrl
+        else:
+            alipayLog=AlipayLog(userId,diagnoseId,constant.AlipayLogAction.GetAlipayUrlFailure)
+            AlipayLog.save(alipayLog)
+
+            LOG.error("诊断[diagnoseId=%d][userId=%d]生成阿里支付地址出错,去阿里获取的payurl为空"%(diagnoseId,userId))
+    LOG.error("诊断[diagnoseId=%d][userId=%d]生成阿里支付地址出错,其他未知原因"%(diagnoseId,userId))
+def sendMobileMessage(userId,diagnoseId,diagnose=None,message=None):
+    telPhoneNo=None
+    if diagnose is None:
+        diagnose=Diagnose.getDiagnoseById(diagnoseId)
+
+    if diagnose and hasattr(diagnose,'patient') and diagnose.patient:
+        telPhoneNo=diagnose.patient.identityPhone
+        if telPhoneNo is None and hasattr(diagnose.patient,'user') and diagnose.patient.user:
+             telPhoneNo=diagnose.patient.user.phone
+    if telPhoneNo is None:
+        user=User.get_id(userId)
+        telPhoneNo=user.phone
+    if telPhoneNo:
+        smsRc=sms_utils.RandCode()
+        smsRc.send_emp_sms(telPhoneNo)
+@front.route('/file/disable', methods=['POST','GET'])
+@login_required
+def disableFile():
+    try:
+        disgnoseId=request.args.get('diagnoseId')
+        type=request.args.get('type')
+        if disgnoseId is None :
+            disgnoseId=string.atoi(disgnoseId)
+        if type is None:
+            type=constant.FileType.Dicom
+        else:
+            type=string.atoi(type)
+        diagnose=Diagnose.getDiagnoseById(disgnoseId)
+        if diagnose and diagnose.pathologyId:
+            pathologyId=diagnose.pathologyId
+            result=File.deleteFileByPathologyId(pathologyId)
+            if result>0:
+                return jsonify(rs.SUCCESS.__dict__, ensure_ascii=False)
+        return jsonify(rs.FAILURE.__dict__, ensure_ascii=False)
+
+
+    except Exception,e:
+        LOG.error( e.message)
+        return redirect(ERROR_URL)
+
+
+
+@front.route('/dicomfile/upload', methods=['POST'])
+def dicomfileUpload():
+    dignoseId=request.form.get('dignoseId')
+    try:
+        if request.method == 'POST':
+            file_infos = []
+            files = request.files
+            for key, file in files.iteritems():
+                if file and allowed_file(file.filename):
+                    filename = file.filename
+                    # file_url = oss_util.uploadFile(diagnoseId, filename)
+                    from DoctorSpring.util.oss_util import uploadFileFromFileStorage
+                    fileurl = uploadFileFromFileStorage(dignoseId, filename, file,'',{})
+
+
+                    new_file = File(FileType.Dicom, filename, '11', fileurl)
+                    File.save(new_file)
 
                     file_infos.append(dict(id=new_file.id,
                                            name=filename,

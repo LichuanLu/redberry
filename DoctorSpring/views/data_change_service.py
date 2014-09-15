@@ -235,8 +235,9 @@ def getDoctorNeedDiagnoseMessageContent(diagnose,doctor):
                 diagnoseContent+=' | 诊断部位:'+positions
         content+=diagnoseContent
     return content
-def getPatienDiagnoseMessageContent(diagnose):
-    content=' 您好，系统中有一个影像已被处理，请查看处理结果！'
+def getPatienDiagnoseMessageContent(diagnose,content):
+    if content is None:
+        content=' 您好，系统中有一个影像已被处理，请查看处理结果！'
     #content=' 您好，系统中有一个新到的影像需要您来诊断！'
     if diagnose and hasattr(diagnose,'patient') and hasattr(diagnose.patient,'user') and diagnose.patient.user:
         content=diagnose.patient.user.name+content
