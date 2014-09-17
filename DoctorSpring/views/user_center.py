@@ -417,6 +417,11 @@ def needCallBySupportStaff():
     pager=Pagger(pageNo,pageSize)
     diagnoses=Diagnose.getDiagnosesBySupportStaff(pager)
     diagnosesDict=dataChangeService.userCenterDiagnoses(diagnoses)
+    data={}
+    data['amount']=0
+    if diagnosesDict:
+        data['amount']=len(diagnosesDict)
+    data['list']=diagnosesDict
     resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,diagnosesDict)
     resultDict=resultStatus.__dict__
     return json.dumps(resultDict,ensure_ascii=False)
