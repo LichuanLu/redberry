@@ -189,10 +189,10 @@ def addConsult():
         redirect(LOGIN_URL)
     form =  ConsultForm(request.form)
     formResult=form.validate()
-    if formResult.status==rs.SUCCESS.status:
+    if formResult.status==rs.SUCCESS.status :
         #session['remember_me'] = form.remember_me.data
         # login and validate the user...
-        if form.doctorId is None:
+        if form.doctorId is None or form.doctorId==u'':
             dignose=Diagnose.getDiagnoseById(form.diagnose_id)
             if dignose and dignose.doctorId:
                 form.doctorId=dignose.doctorId
@@ -200,7 +200,8 @@ def addConsult():
                 return redirect(ERROR_URL)
             if hasattr(dignose,'patient') and dignose.patient:
                 userId=dignose.patient.userID
-        consult=Consult(userId,form.doctorId,form.title,form.content,form.parent_id,form.source_id,form.type,form.diagnose_id)
+        if form.source_id is None or form.source_id == u'':
+            form.source_id=-1
         consult=Consult(userId,form.doctorId,form.title,form.content,form.parent_id,form.source_id,form.type,form.diagnose_id)
         Consult.save(consult)
         if form.source_id:
