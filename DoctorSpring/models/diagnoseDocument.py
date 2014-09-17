@@ -211,8 +211,7 @@ class Diagnose(Base):
     def getDiagnosesBySupportStaff(cls,pagger):
         if pagger is None:
             return
-        return session.query(Diagnose).filter(Diagnose.status==ModelStatus.Draft,Diagnose.ossUploaded==constant.DiagnoseUploaed.Uploaded,
-                                       Diagnose.supportStaffCall==constant.DiagnoseSupportStaffCallStatus.NoCall).order_by(Diagnose.createDate.desc())\
+        return session.query(Diagnose).filter(Diagnose.status==constant.DiagnoseStatus.NeedPay,Diagnose.ossUploaded==constant.DiagnoseUploaed.Uploaded).order_by(Diagnose.createDate.desc())\
             .offset(pagger.getOffset()).limit(pagger.getLimitCount()).all()
 
     @classmethod
