@@ -838,3 +838,10 @@ def checkVerifyCode():
     else:
         result=rs.ResultStatus(rs.FAILURE.status,"验证码错误，请重新输入验证码")
         return  json.dumps(result.__dict__,ensure_ascii=False)
+
+
+@uc.route('/redirectAlipay', methods=['GET','POST'])
+def redirectAlipay():
+    #return redirect("/pdf")
+    #print url_for('user_center.generatorPdf',diagnoseName='ccheng')
+    return redirect("http://www.baidu.com")
