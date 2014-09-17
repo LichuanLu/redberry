@@ -410,7 +410,7 @@ def getDiagnoseListByHospitaluserReal():
         return json.dumps(resultDict,ensure_ascii=False)
     return json.dumps(rs.FAILURE.__dict__,ensure_ascii=False)
 
-@uc.route('/diagnose/list/needCall',  methods = ['GET', 'POST'])
+@uc.route('/diagnose/list/needpay',  methods = ['GET', 'POST'])
 def needCallBySupportStaff():
     pageNo=request.args.get('pageNumber')
     pageSize=request.args.get('pageSize')
