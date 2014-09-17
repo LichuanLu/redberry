@@ -210,7 +210,7 @@ class ConsultForm(object):
         self.content=args.get('content')
         self.parent_id=args.get('parent_id')
         self.source_id=args.get('source_id')#defaultValue=-1
-        self.diagnose_id=args.get('diagnose_id')
+        self.diagnose_id=args.get('diagnoseId')
         self.type=args.get('type')
     def validate(self):
         try:
