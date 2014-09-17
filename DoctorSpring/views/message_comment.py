@@ -210,6 +210,7 @@ def addConsult():
                 sourceConsult.count+=1
                 Consult.update(consult)
 
+
         #LOG.info('%d 成功添加诊断评论')%userId
         return json.dumps(formResult.__dict__,ensure_ascii=False)
     return json.dumps(formResult.__dict__,ensure_ascii=False)
