@@ -459,7 +459,7 @@ def changeDiagnoseStatus(diagnoseId):
     return  json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
 
 @diagnoseView.route('/diagnose/toNeedPay', methods = ['GET', 'POST'])
-def changeDiagnoseStatus(diagnoseId):
+def changeDiagnoseToNeedPay(diagnoseId):
     try:
 
         loginUserId=session.get('userId')
