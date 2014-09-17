@@ -235,7 +235,7 @@ def getDoctorNeedDiagnoseMessageContent(diagnose,doctor):
                 diagnoseContent+=' | 诊断部位:'+positions
         content+=diagnoseContent
     return content
-def getPatienDiagnoseMessageContent(diagnose,content):
+def getPatienDiagnoseMessageContent(diagnose,content=None):
     if content is None:
         content=' 您好，系统中有一个影像已被处理，请查看处理结果！'
     #content=' 您好，系统中有一个新到的影像需要您来诊断！'

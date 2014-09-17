@@ -14,7 +14,7 @@ from DoctorSpring.util import result_status as rs,object2dict,constant
 import json
 import  data_change_service as dataChangeService
 from DoctorSpring import app
-from config import LOGIN_URL
+from config import LOGIN_URL,ERROR_URL
 import config
 import string
 config = config.rec()
@@ -184,7 +184,7 @@ def addConsult():
     user_id=None
     if session.has_key('userId'):
         userId=session['userId']
-    #userId='5'
+    userId='5'
     if userId is None:
         redirect(LOGIN_URL)
     form =  ConsultForm(request.form)
@@ -192,6 +192,12 @@ def addConsult():
     if formResult.status==rs.SUCCESS.status:
         #session['remember_me'] = form.remember_me.data
         # login and validate the user...
+        if form.doctorId is None:
+            dignose=Diagnose.getDiagnoseById(form.diagnose_id)
+            if dignose and dignose.doctorId:
+                form.doctorId=dignose.doctorId
+            else:
+                return redirect(ERROR_URL)
         consult=Consult(form.userId,form.doctorId,form.title,form.content,form.parent_id,form.source_id,form.type,form.diagnose_id)
         Consult.save(consult)
         if form.source_id:

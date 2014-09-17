@@ -216,8 +216,9 @@ class ConsultForm(object):
         try:
             if self.userId is None:
                 return FAILURE
-            if self.doctorId is None:
-                return FAILURE
+            # if self.doctorId is None:
+            #
+            #     return FAILURE
             # if self.title is None:
             #     return FAILURE
             if  self.type:
