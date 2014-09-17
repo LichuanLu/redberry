@@ -47,7 +47,7 @@ class FlaskrTestCase(unittest.TestCase):
             #doctorId=1,
             title='咨询一下关于颈部问题的',
             content='咨询一下关于颈部问题的解决方案',
-            diagnose_id="10",
+            diagnoseId="10",
         ), follow_redirects=True)
     def test_addThanksNote(self):
         rv = self.app.post('/gratitude/create', data=dict(

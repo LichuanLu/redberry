@@ -198,7 +198,9 @@ def addConsult():
                 form.doctorId=dignose.doctorId
             else:
                 return redirect(ERROR_URL)
-        consult=Consult(form.userId,form.doctorId,form.title,form.content,form.parent_id,form.source_id,form.type,form.diagnose_id)
+            if hasattr(dignose,'patient') and dignose.patient:
+                userId=dignose.patient.userID
+        consult=Consult(userId,form.doctorId,form.title,form.content,form.parent_id,form.source_id,form.type,form.diagnose_id)
         Consult.save(consult)
         if form.source_id:
             sourceConsult=Consult.getById(form.source_id)
@@ -206,7 +208,7 @@ def addConsult():
                 sourceConsult.count+=1
                 Consult.update(consult)
 
-        LOG.info(userId+' 成功添加诊断评论')
+        #LOG.info('%d 成功添加诊断评论')%userId
         return json.dumps(formResult.__dict__,ensure_ascii=False)
     return json.dumps(formResult.__dict__,ensure_ascii=False)
 
