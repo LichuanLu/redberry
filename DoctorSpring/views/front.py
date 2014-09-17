@@ -5,7 +5,7 @@ import os.path
 import config
 from config import LOGIN_URL
 import data_change_service as dataChangeService
-from flask import request, redirect, url_for, Blueprint, jsonify, g, send_from_directory, session
+from flask import request, redirect, url_for, Blueprint, jsonify,json, g, send_from_directory, session
 from flask import abort, render_template, flash
 from flask_login import login_required
 from DoctorSpring.models import Doctor, Hospital, Location, Skill, User, Position, Patient, Diagnose, Pathology, PathologyPostion, File, DiagnoseLog, Comment,UserRole,Message,AlipayLog
@@ -257,13 +257,18 @@ def applyDiagnoseForm(formid):
                         new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
                         DiagnoseLog.save(db_session, new_diagnoselog)
                     else:
-                        new_diagnose.ossUploaded=constant.DiagnoseUploaed.Uploaded
-                        new_diagnose.status = DiagnoseStatus.NeedPay
-                        Diagnose.save(new_diagnose)
-
                         #产生alipay，发送短消息
                         userId= session.get('userId')
+
+
+                        new_diagnose.ossUploaded=constant.DiagnoseUploaed.Uploaded
+                        new_diagnose.status = DiagnoseStatus.NeedPay
+
                         sendAllMessage(userId,new_diagnose)
+
+                        Diagnose.save(new_diagnose)
+
+
 
                 else:
                     form_result = ResultStatus(FAILURE.status, "找不到上步的草稿1")
@@ -348,7 +353,7 @@ def fileUpload():
 def sendAllMessage(userId,diagnose):
     new_diagnoselog = DiagnoseLog(diagnose.uploadUserId, diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
     DiagnoseLog.save(db_session, new_diagnoselog)
-    payUrl=generateAliPay(userId,None,diagnose)
+    payUrl=generateAliPay(userId,diagnose.id,diagnose)
     if payUrl:
         sendMobileMessage(userId,diagnose.id,diagnose,payUrl)
         #诊断通知
@@ -361,6 +366,8 @@ def generateAliPay(userId,diagnoseId,diagnose=None):
 
     if diagnose is None:
         diagnose=Diagnose.getDiagnoseById(diagnoseId)
+    if diagnoseId is None and diagnose:
+        diagnoseId =  diagnose.id
     if userId is None:
         LOG.warn("诊断生成阿里支付地址出错,用户未登录")
 
@@ -417,7 +424,7 @@ def sendMobileMessage(userId,diagnoseId,diagnose=None,message=None):
     if telPhoneNo:
         smsRc=sms_utils.RandCode()
         template_param = {'param1':'243455'}
-        smsRc.send_emp_sms(telPhoneNo,smsRc.TEMPLATE_ID_1,template_param)
+        smsRc.send_emp_sms(telPhoneNo,smsRc.TEMPLATE_ID_1,json.dumps(template_param))
 @front.route('/file/disable', methods=['POST','GET'])
 @login_required
 def disableFile():
@@ -447,7 +454,10 @@ def disableFile():
 
 @front.route('/dicomfile/upload', methods=['POST'])
 def dicomfileUpload():
-    dignoseId=request.form.get('dignoseId')
+    diagnoseId=request.form.get('diagnoseId')
+    if diagnoseId is None:
+        return jsonify({'code': 1,  'message' : "error", 'data': ''})
+    diagnoseId = string.atoi(diagnoseId)
     try:
         if request.method == 'POST':
             file_infos = []
@@ -457,10 +467,10 @@ def dicomfileUpload():
                     filename = file.filename
                     # file_url = oss_util.uploadFile(diagnoseId, filename)
                     from DoctorSpring.util.oss_util import uploadFileFromFileStorage
-                    fileurl = uploadFileFromFileStorage(dignoseId, filename, file,'',{})
+                    fileurl = uploadFileFromFileStorage(diagnoseId, filename, file,'',{})
 
 
-                    new_file = File(FileType.Dicom, filename, '11', fileurl)
+                    new_file = File(FileType.Dicom, filename, '11', fileurl,None)
                     File.save(new_file)
 
                     file_infos.append(dict(id=new_file.id,
@@ -477,6 +487,10 @@ def dicomfileUpload():
 @front.route('/patientreport/upload', methods=['POST'])
 @login_required
 def patientReportUpload():
+    diagnoseId=request.form.get('diagnoseId')
+    if diagnoseId is None:
+        return jsonify({'code': 1,  'message' : "error", 'data': ''})
+    diagnoseId = string.atoi(diagnoseId)
     try:
         if request.method == 'POST':
             file_infos = []
@@ -486,10 +500,9 @@ def patientReportUpload():
                     filename = file.filename
                     # file_url = oss_util.uploadFile(diagnoseId, filename)
                     from DoctorSpring.util.oss_util import uploadFileFromFileStorage
-                    fileurl = uploadFileFromFileStorage(4, filename, file,'',{})
+                    fileurl = uploadFileFromFileStorage(diagnoseId, filename, file,'',{})
 
-
-                    new_file = File(FileType.FileAboutDiagnose, filename, '11', fileurl)
+                    new_file = File(FileType.FileAboutDiagnose, filename, '11', fileurl,None)
                     File.save(new_file)
 
                     file_infos.append(dict(id=new_file.id,

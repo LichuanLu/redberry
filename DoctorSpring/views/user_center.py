@@ -790,12 +790,12 @@ def getMobileVerifyCode():
             if telPhoneNo is None and hasattr(diagnose.patient,'user') and diagnose.patient.user:
                 telPhoneNo=diagnose.patient.user.phone
         if telPhoneNo is None:
-            user=User.get_id(userId)
+            user=User.getById(userId)
             telPhoneNo=user.phone
         if telPhoneNo:
             smsRc=sms_utils.RandCode()
             template_param = {'param1':verifyCode}
-            smsRc.send_emp_sms(telPhoneNo,smsRc.TEMPLATE_ID_1,template_param)
+            smsRc.send_emp_sms(telPhoneNo,smsRc.TEMPLATE_ID_1,json.dumps(template_param))
             return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
         else:
             LOG.error("诊断[%s]发送验证码错误"%diagnoseId)
