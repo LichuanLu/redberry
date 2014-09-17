@@ -461,13 +461,11 @@ def changeDiagnoseStatus(diagnoseId):
 @diagnoseView.route('/diagnose/toNeedPay', methods = ['GET', 'POST'])
 def changeDiagnoseStatus(diagnoseId):
     try:
-        status=request.args.get('status')
+
         loginUserId=session.get('userId')
         if loginUserId is None:
             return
-        if status is None:
-            return json.dumps(rs.PARAM_ERROR.__dict__,ensure_ascii=False)
-        status=string.atoi(status)
+
         loginUserId=string.atoi(loginUserId)
         diagnose=Diagnose.getDiagnoseById(diagnoseId)
         if diagnose is None or (not hasattr(diagnose,"patient")) or  diagnose.patient is None:
@@ -476,8 +474,10 @@ def changeDiagnoseStatus(diagnoseId):
         if userID==loginUserId or diagnose.uploadUserId==loginUserId:
             diagnose=Diagnose()
             diagnose.id=diagnoseId
-            diagnose.status= status
+            diagnose.status= constant.DiagnoseStatus.NeedPay
             Diagnose.update(diagnose)
+            from DoctorSpring.views.front import sendAllMessage
+            sendAllMessage(userID,diagnose)
     except Exception,e:
         LOG.error(e.message)
         return json.dumps(rs.FAILURE.__dict__,ensure_ascii=False)

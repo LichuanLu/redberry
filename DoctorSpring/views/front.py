@@ -264,10 +264,8 @@ def applyDiagnoseForm(formid):
                         new_diagnose.ossUploaded=constant.DiagnoseUploaed.Uploaded
                         new_diagnose.status = DiagnoseStatus.NeedPay
 
-                        sendAllMessage(userId,new_diagnose)
-
                         Diagnose.save(new_diagnose)
-
+                        sendAllMessage(userId,new_diagnose)
 
 
                 else:
