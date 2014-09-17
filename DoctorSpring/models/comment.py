@@ -60,13 +60,26 @@ class Consult(Base):
             return
         return session.query(Consult).filter(Consult.id==id).first()
     @classmethod
-    def getConsultsByDoctorId(cls,doctorId,sourceId=None):
+    def getConsultsByDoctorId(cls,doctorId,sourceId=None,status=-1):
         if doctorId is None:
             return
         if sourceId:
+            if status==0:
+                return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.source_id==sourceId,Consult.status==ModelStatus.Normal) \
+                    .order_by(Consult.updateTime.desc()).all()
+            if status==2:
+                return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.source_id==sourceId,Consult.status==2) \
+                    .order_by(Consult.updateTime.desc()).all()
             return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.source_id==sourceId,Consult.status!=ModelStatus.Del) \
                 .order_by(Consult.updateTime.desc()).all()
         else:
+            if status==0:
+                return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.status==ModelStatus.Normal,Consult.source_id==-1). \
+                    order_by(Consult.updateTime.desc()).all()
+            #已读
+            if status==2:
+                return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.status==2,Consult.source_id==-1). \
+                    order_by(Consult.updateTime.desc()).all()
             return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.status!=ModelStatus.Del,Consult.source_id==-1). \
                 order_by(Consult.updateTime.desc()).all()
 

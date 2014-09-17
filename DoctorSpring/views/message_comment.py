@@ -219,12 +219,19 @@ def addConsult():
 @mc.route('/doctor/<int:doctorId>/consultList', methods = ['GET', 'POST'])
 def getConsultsByDoctor(doctorId):
     sourceId=request.args.get('source_id')
+    status=request.args.get('status')
+    if status is None:
+        status=-1
+    else:
+        status=string.atoi(status)
     if doctorId:
         consuts=None
         if sourceId:
             consuts=Consult.getConsultsByDoctorId(doctorId,string.atoi(sourceId))
         else:
             consuts=Consult.getConsultsByDoctorId(doctorId)
+
+
         consutsDict=object2dict.objects2dicts(consuts)
         dataChangeService.setConsultsResult(consutsDict)
 
