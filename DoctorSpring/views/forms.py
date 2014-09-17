@@ -214,8 +214,8 @@ class ConsultForm(object):
         self.type=args.get('type')
     def validate(self):
         try:
-            if self.userId is None:
-                return FAILURE
+            # if self.userId is None:
+            #     return FAILURE
             # if self.doctorId is None:
             #
             #     return FAILURE
@@ -223,10 +223,6 @@ class ConsultForm(object):
             #     return FAILURE
             if  self.type:
                 self.type=string.atoi(self.type)
-            if  self.parent_id:
-                self.parent_id=string.atoi(self.parent_id)
-            if  self.source_id:
-                self.source_id=string.atoi(self.source_id)
 
             if self.content is None or len(self.content)<10:
                 failure=ResultStatus(FAILURE.status,"输入的内容长度必须大于等于10")

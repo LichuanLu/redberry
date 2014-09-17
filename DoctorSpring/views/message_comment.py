@@ -201,6 +201,7 @@ def addConsult():
             if hasattr(dignose,'patient') and dignose.patient:
                 userId=dignose.patient.userID
         consult=Consult(userId,form.doctorId,form.title,form.content,form.parent_id,form.source_id,form.type,form.diagnose_id)
+        consult=Consult(userId,form.doctorId,form.title,form.content,form.parent_id,form.source_id,form.type,form.diagnose_id)
         Consult.save(consult)
         if form.source_id:
             sourceConsult=Consult.getById(form.source_id)
