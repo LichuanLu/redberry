@@ -227,9 +227,9 @@ def getConsultsByDoctor(doctorId):
     if doctorId:
         consuts=None
         if sourceId:
-            consuts=Consult.getConsultsByDoctorId(doctorId,string.atoi(sourceId))
+            consuts=Consult.getConsultsByDoctorId(doctorId,string.atoi(sourceId),status)
         else:
-            consuts=Consult.getConsultsByDoctorId(doctorId)
+            consuts=Consult.getConsultsByDoctorId(doctorId,status=status)
 
 
         consutsDict=object2dict.objects2dicts(consuts)
