@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block contentHolder %}
+<div id="admin-kefu-content" class="main-content-padding">
+    <div class="row">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs" id="kefuTab">
+                <li class="active">
+                    <a href="#diagnose-manage-wrapper">诊断管理</a>
+                </li>
+                <li>
+                    <a href="#user-manage-wrapper">用户管理</a>
+                </li>
+                <li>
+                    <a href="#sharing-manage-wrapper">经验分享管理</a>
+                </li>
+                <li>
+                    <a href="#gratitude-manage-wrapper">感谢信管理</a>
+                </li>
+            </ul>
+            <div id='content' class="tab-content">
+                <div class="tab-pane active" id="diagnose-manage-wrapper"></div>
+                <div class="tab-pane" id="user-manage-wrapper"></div>
+                <div class="tab-pane" id="sharing-manage-wrapper">
+                </div>
+                <div class="tab-pane" id="gratitude-manage-wrapper"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock contentHolder %}

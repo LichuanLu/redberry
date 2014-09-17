@@ -143,6 +143,7 @@ class RoleId(object):
     Patient=3
     HospitalUser=4 #fenzhen
     HospitalUserReal=5
+    Kefu=6
 class DiagnoseLogAction(object):
     NewDiagnoseAction='提出诊断申请'
     FetchDiagnoseAction='正在分发诊断'

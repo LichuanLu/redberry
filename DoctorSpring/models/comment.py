@@ -85,7 +85,7 @@ class Consult(Base):
 
 
     @classmethod
-    def getConsultsByUserId(cls,userId,sourceId=None):
+    def getConsultsByUserId(cls,userId,sourceId=None,status=-1):
         if userId is None:
             return
         if sourceId:

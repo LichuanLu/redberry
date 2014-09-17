@@ -80,6 +80,10 @@ def endterPatientHome():
     else:
         return redirect(LOGIN_URL)
 
+@uc.route('/admin/kefu',  methods = ['GET', 'POST'])
+def endterKefuhome():
+
+    return render_template("adminKefu.html")
 
 @uc.route('/hospital/user',  methods = ['GET', 'POST'])
 def endterHospitalUserHome():

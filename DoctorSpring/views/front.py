@@ -664,6 +664,8 @@ def userCenter(userId):
             return redirect('/hospital/user')
         if userRole.roleId==constant.RoleId.Patient:
             return redirect('/patienthome')
+        if userRole.roleId==constant.RoleId.Kefu:
+            return redirect('/admin/kefu')
     return render_template("errorPage.html")
 
 @front.route('/help/center', methods=['GET', 'POST'])

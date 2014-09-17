@@ -243,6 +243,11 @@ def getConsultsByDoctor(doctorId):
 @mc.route('/user/<int:userId>/consultList', methods = ['GET', 'POST'])
 def getConsultsByUser(userId):
     sourceId=request.args.get('source_id')
+    status=request.args.get('status')
+    if status is None:
+        status=-1
+    else:
+        status=string.atoi(status)
     if userId:
         consuts=None
         if sourceId:
