@@ -422,7 +422,7 @@ def needCallBySupportStaff():
     if diagnosesDict:
         data['amount']=len(diagnosesDict)
     data['list']=diagnosesDict
-    resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,diagnosesDict)
+    resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,data)
     resultDict=resultStatus.__dict__
     return json.dumps(resultDict,ensure_ascii=False)
 
