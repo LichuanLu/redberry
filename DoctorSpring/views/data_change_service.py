@@ -504,3 +504,6 @@ def setConsultsResult(consutsDict):
                 if user:
                     consutDict['userName']=user.name
                     consutDict['avartarUrl']=user.imagePath
+        consutDict['amount']=consutDict.get('count')
+
+
