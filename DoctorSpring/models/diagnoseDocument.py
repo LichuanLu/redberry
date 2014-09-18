@@ -326,6 +326,11 @@ class Diagnose(Base):
         if alipayHashcode:
             return session.query(Diagnose).filter(Diagnose.alipayHashCode==alipayHashcode).count()>0
         return False
+    @classmethod
+    def getAlipayUrl(cls,alipayHashcode):
+        if alipayHashcode:
+            return session.query(Diagnose.alipayUrl).filter(Diagnose.alipayHashCode==alipayHashcode).first()
+
 
 
 

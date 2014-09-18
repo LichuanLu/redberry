@@ -817,8 +817,8 @@ def getMobileVerifyCode():
 
 @uc.route('/user/mobile/update', methods=['GET','POST'])
 def checkVerifyCode():
-    code=request.args.get('verifyCode')
-    mobile=request.args.get('mobile')
+    code=request.form.get('verifyCode')
+    mobile=request.form.get('mobile')
     verifyCode=session.get('verifyCode')
     userId=session.get('userId')
     if verifyCode is None:
@@ -849,8 +849,9 @@ def checkVerifyCode():
         return  json.dumps(result.__dict__,ensure_ascii=False)
 
 
-@uc.route('/redirectAlipay', methods=['GET','POST'])
-def redirectAlipay():
+@uc.route('/redirectAlipay/<string:alipayHashcode>', methods=['GET','POST'])
+def redirectAlipay(alipayHashcode):
+    #Diagnose
     #return redirect("/pdf")
     #print url_for('user_center.generatorPdf',diagnoseName='ccheng')
     return redirect("http://www.baidu.com")
