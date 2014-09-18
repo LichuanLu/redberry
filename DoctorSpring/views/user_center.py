@@ -627,7 +627,7 @@ def testRedirect():
 
 @uc.route('/account/admin', methods=['GET','POST'])
 def updateAcountInfo():
-    type=request.args.get('type')
+    type=request.form.get('type')
     if type:
         type=string.atoi(type)  #医生：1 病人：2
     else:
@@ -646,10 +646,10 @@ def updateAcountInfo():
             doctor.identityPhone=form.identityPhone
             doctor.username=form.name
             hospitalId=Doctor.update(doctor)
-            if hospitalId:
-                hospital=Hospital(form.hospitalName)
-                hospital.id=hospitalId
-                Hospital.updateHospital(hospital)
+            # if hospitalId:
+            #     hospital=Hospital(form.hospitalName)
+            #     hospital.id=hospitalId
+            #     Hospital.updateHospital(hospital)
 
         return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
 
