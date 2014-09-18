@@ -407,6 +407,12 @@ def generateAliPay(userId,diagnoseId,diagnose=None):
 
             LOG.error("诊断[diagnoseId=%d][userId=%d]生成阿里支付地址出错,去阿里获取的payurl为空"%(diagnoseId,userId))
     LOG.error("诊断[diagnoseId=%d][userId=%d]生成阿里支付地址出错,其他未知原因"%(diagnoseId,userId))
+def updateDiagnose(diagnoseId,alipayUrl,alipayHashCode):
+    if diagnoseId:
+        diagnose=Diagnose()
+        diagnose.alipayUrl=alipayUrl
+        diagnose.alipayHashCode=alipayHashCode
+        Diagnose.update()
 def sendMobileMessage(userId,diagnoseId,diagnose=None,message=None):
     telPhoneNo=None
     if diagnose is None:
