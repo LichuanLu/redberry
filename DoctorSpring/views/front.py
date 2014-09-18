@@ -399,6 +399,8 @@ def generateAliPay(userId,diagnoseId,diagnose=None):
             alipayLog.description=description
             alipayLog.payUrl=payUrl
             AlipayLog.save(alipayLog)
+
+            updateDiagnose(diagnose.id,payUrl)
             LOG.info("诊断[diagnoseId=%d][userId=%d]生成阿里支付地址成功"%(diagnoseId,userId))
             return payUrl
         else:
@@ -407,12 +409,19 @@ def generateAliPay(userId,diagnoseId,diagnose=None):
 
             LOG.error("诊断[diagnoseId=%d][userId=%d]生成阿里支付地址出错,去阿里获取的payurl为空"%(diagnoseId,userId))
     LOG.error("诊断[diagnoseId=%d][userId=%d]生成阿里支付地址出错,其他未知原因"%(diagnoseId,userId))
-def updateDiagnose(diagnoseId,alipayUrl,alipayHashCode):
+def updateDiagnose(diagnoseId,alipayUrl):
     if diagnoseId:
         diagnose=Diagnose()
         diagnose.alipayUrl=alipayUrl
-        diagnose.alipayHashCode=alipayHashCode
-        Diagnose.update()
+        diagnose.alipayHashCode=getAlipayHashCode()
+        Diagnose.update(diagnose)
+def getAlipayHashCode():
+    from DoctorSpring.util.verify_code import generatorAlipayHashCode
+    alipayHashcode= generatorAlipayHashCode()
+    if Diagnose.existAlipayHashCode(alipayHashcode):
+        alipayHashcode=getAlipayHashCode()
+    return alipayHashcode
+
 def sendMobileMessage(userId,diagnoseId,diagnose=None,message=None):
     telPhoneNo=None
     if diagnose is None:

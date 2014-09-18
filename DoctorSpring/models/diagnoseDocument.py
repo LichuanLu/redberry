@@ -315,8 +315,18 @@ class Diagnose(Base):
             diagnoseNeedChange.supportStaffCall=diagnose.supportStaffCall
         if diagnose.uploadUserId :
             diagnoseNeedChange.uploadUserId=diagnose.uploadUserId
+        if diagnose.alipayUrl:
+            diagnoseNeedChange.alipayUrl=diagnose.alipayUrl
+        if diagnose.alipayHashCode:
+            diagnoseNeedChange.alipayHashCode=diagnose.alipayHashCode
         session.commit()
         session.flush()
+    @classmethod
+    def existAlipayHashCode(cls,alipayHashcode):
+        if alipayHashcode:
+            return session.query(Diagnose).filter(Diagnose.alipayHashCode==alipayHashcode).count()>0
+        return False
+
 
 
 
