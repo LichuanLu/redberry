@@ -77,7 +77,9 @@ DiagnoseSeriesNumberBase=50000
 class MessageStatus(ModelStatus):
       Readed=2
 
-
+class UserPhoneBind(object):
+    NoBind=0
+    Binded=1
 
 class CommentType(object):
     DiagnoseComment=0

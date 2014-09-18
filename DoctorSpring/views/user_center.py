@@ -830,9 +830,9 @@ def checkVerifyCode():
     if code == verifyCode:
         if mobile:
             import re
-            p = re.compile(r"((13|14|15|18)d{9}$)")
-            if p.match(mobile):
-                user=User.update(userId,None,mobile)
+            #p = re.compile(r"((13|14|15|18)d{9}$)")
+            if len(mobile)==11:
+                user=User.update(userId,mobile=mobile,isBindPhone=constant.UserPhoneBind.Binded);
                 if user:
                     return  json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
                 else:
