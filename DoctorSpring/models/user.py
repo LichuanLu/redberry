@@ -94,7 +94,7 @@ class User(Base):
             if address:
                 user.address=address
             if mobile:
-                user.mobile=mobile
+                user.phone=mobile
             if email:
                 user.email=email
             if identityCode:
