@@ -644,6 +644,7 @@ def updateAcountInfo():
         if type==1:
             doctor=Doctor(userId)
             doctor.identityPhone=form.identityPhone
+            doctor.username=form.name
             hospitalId=Doctor.update(doctor)
             if hospitalId:
                 hospital=Hospital(form.hospitalName)
@@ -849,9 +850,11 @@ def checkVerifyCode():
         return  json.dumps(result.__dict__,ensure_ascii=False)
 
 
-@uc.route('/redirectAlipay/<string:alipayHashcode>', methods=['GET','POST'])
+@uc.route('/pay/<string:alipayHashcode>', methods=['GET','POST'])
 def redirectAlipay(alipayHashcode):
-    #Diagnose
+    alipayUrl=Diagnose.getAlipayUrl(alipayHashcode)
+    if alipayUrl is None:
+        return redirect(ERROR_URL)
     #return redirect("/pdf")
     #print url_for('user_center.generatorPdf',diagnoseName='ccheng')
-    return redirect("http://www.baidu.com")
+    return redirect(alipayUrl[0])
