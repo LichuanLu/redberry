@@ -458,7 +458,7 @@ def changeDiagnoseStatus(diagnoseId):
         return json.dumps(rs.FAILURE.__dict__,ensure_ascii=False)
     return  json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
 
-@diagnoseView.route('/diagnose/toNeedPay', methods = ['GET', 'POST'])
+@diagnoseView.route('/diagnose/<int:diagnoseId>/toNeedPay', methods = ['GET', 'POST'])
 def changeDiagnoseToNeedPay(diagnoseId):
     try:
 
