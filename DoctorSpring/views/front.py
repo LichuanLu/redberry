@@ -347,6 +347,16 @@ def fileUpload():
     except Exception,e:
         LOG.error( e.message)
         return jsonify({'code': 1,  'message' : "上传出错", 'data': ''})
+@front.route('/file/<int:filetype>/delete', methods=['POST'])
+def diagnosefileUpload(filetype):
+    userId=session.get('userId')
+    diagnoseId=request.args.get('diagnoseId')
+    diagnose=Diagnose.getDiagnoseById(diagnoseId)
+    if diagnose and userId:
+        userId=string.atoi(userId)
+        if diagnose.uploadUserId==userId:
+            File.deleteFileByPathologyId(diagnose.pathologyId,filetype)
+
 #包括诊断消息,和发短信
 def sendAllMessage(userId,diagnose):
     new_diagnoselog = DiagnoseLog(diagnose.uploadUserId, diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
@@ -412,6 +422,7 @@ def generateAliPay(userId,diagnoseId,diagnose=None):
 def updateDiagnose(diagnoseId,alipayUrl):
     if diagnoseId:
         diagnose=Diagnose()
+        diagnose.id=diagnoseId
         diagnose.alipayUrl=alipayUrl
         diagnose.alipayHashCode=getAlipayHashCode()
         Diagnose.update(diagnose)
