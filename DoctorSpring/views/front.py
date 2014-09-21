@@ -372,8 +372,11 @@ def sendAllMessage(userId,diagnose):
 #增加参数diagnose的目的是减少对数据库的请求
 def generateAliPay(userId,diagnoseId,diagnose=None):
 
-    if diagnose is None:
+    if diagnoseId:
         diagnose=Diagnose.getDiagnoseById(diagnoseId)
+    else:
+        diagnose=Diagnose.getDiagnoseById(diagnose.id)
+
     if diagnoseId is None and diagnose:
         diagnoseId =  diagnose.id
     if userId is None:
@@ -385,7 +388,7 @@ def generateAliPay(userId,diagnoseId,diagnose=None):
         LOG.error("诊断[diagnoseId=%d]生成阿里支付地址出错,诊断在系统中不存在"%diagnoseId)
 
     if diagnose and diagnose.uploadUserId!=userId:
-        if hasattr(diagnose,'patient') and string.atoi(userId)!=diagnose.patient.userID:
+        if hasattr(diagnose,'patient') and userId != diagnose.patient.userID:
             LOG.error("诊断[diagnoseId=%d][userId=%d]生成阿里支付地址出错,用户没有权限"%(diagnoseId,userId))
 
     if diagnose and diagnose.status==constant.DiagnoseStatus.NeedPay and diagnose.ossUploaded==constant.DiagnoseUploaed.Uploaded:
@@ -443,7 +446,7 @@ def sendMobileMessage(userId,diagnoseId,diagnose=None,message=None):
         if telPhoneNo is None and hasattr(diagnose.patient,'user') and diagnose.patient.user:
              telPhoneNo=diagnose.patient.user.phone
     if telPhoneNo is None:
-        user=User.get_id(userId)
+        user=User.getById(userId)
         telPhoneNo=user.phone
     if telPhoneNo:
         smsRc=sms_utils.RandCode()
