@@ -171,7 +171,8 @@ def applyDiagnoseForm(formid):
 
                 # Hospital User 注册用户
                 if(form.isHospitalUser):
-                    new_user = User(form.phonenumber, random.sample('zyxwvutsrqponmlkjihgfedcba1234567890',6), False)
+                    passwd=random.sample('zyxwvutsrqponmlkjihgfedcba1234567890',6)
+                    new_user = User(form.phonenumber, passwd, False)
                     new_user.type = UserStatus.patent
                     new_user.status = ModelStatus.Draft
                     User.save(new_user)
@@ -179,6 +180,7 @@ def applyDiagnoseForm(formid):
                     Patient.save(new_patient)
                     new_userrole = UserRole(new_user.id, RoleId.Patient)
                     UserRole.save(new_userrole)
+                    sendRegisterMobileMessage(session.get('userId'),new_diagnose,new_user.phone,passwd)
 
                 form_result.data = {'formId': 3, }
             else:
@@ -452,6 +454,15 @@ def sendMobileMessage(userId,diagnoseId,diagnose=None,message=None):
         smsRc=sms_utils.RandCode()
         template_param = {'param1':'243455'}
         smsRc.send_emp_sms(telPhoneNo,smsRc.TEMPLATE_ID_1,json.dumps(template_param))
+def sendRegisterMobileMessage(userId,diagnose,phoneNumber,passwd):
+    if userId and diagnose:
+        new_diagnoselog = DiagnoseLog(userId, diagnose.id, DiagnoseLogAction.SendMessageToUser)
+        DiagnoseLog.save(db_session, new_diagnoselog)
+    if phoneNumber:
+        smsRc=sms_utils.RandCode()
+        template_param = {'param1':passwd}
+        smsRc.send_emp_sms(phoneNumber,smsRc.TEMPLATE_ID_1,json.dumps(template_param))
+
 @front.route('/file/disable', methods=['POST','GET'])
 @login_required
 def disableFile():

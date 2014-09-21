@@ -8,7 +8,7 @@ from forms import LoginForm ,CommentsForm ,UserFavortiesForm,ThanksNoteForm ,Use
 from DoctorSpring import lm
 from database import  db_session
 from sqlalchemy.exc import IntegrityError
-from DoctorSpring.models import User,Patient,Doctor,Diagnose ,DiagnoseTemplate,DoctorProfile
+from DoctorSpring.models import User,Patient,Doctor,Diagnose ,DiagnoseTemplate,DoctorProfile ,Department,Skill
 from DoctorSpring.models import User,Comment,Message ,UserFavorites,UserRole ,ThanksNote,Hospital
 from DoctorSpring.util import result_status as rs,object2dict,pdf_utils,constant
 from DoctorSpring.util.constant import MessageUserType,Pagger,ReportType,ReportStatus
@@ -416,7 +416,7 @@ def needCallBySupportStaff():
     pageSize=request.args.get('pageSize')
     pager=Pagger(pageNo,pageSize)
     diagnoses=Diagnose.getDiagnosesBySupportStaff(pager)
-    diagnosesDict=dataChangeService.userCenterDiagnoses(diagnoses)
+    diagnosesDict=dataChangeService.getDiagnoseListByKefu(diagnoses)
     data={}
     data['amount']=0
     if diagnosesDict:
@@ -858,3 +858,25 @@ def redirectAlipay(alipayHashcode):
     #return redirect("/pdf")
     #print url_for('user_center.generatorPdf',diagnoseName='ccheng')
     return redirect(alipayUrl[0])
+
+@uc.route('/hospital/list', methods=['GET','POST'])
+def getAllHospitalList():
+    hospitals=Hospital.getAllHospitals(db_session)
+    hospitalsDict=dataChangeService.getAllHospital(hospitals)
+    result=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,hospitalsDict)
+    return  json.dumps(result.__dict__,ensure_ascii=False)
+
+@uc.route('/department/list', methods=['GET','POST'])
+def getAllDepartmentlList():
+    departments=Department.getAllDepartments()
+    departmentsDict=dataChangeService.getAllDepartments(departments)
+    result=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,departmentsDict)
+    return  json.dumps(result.__dict__,ensure_ascii=False)
+
+@uc.route('/skill/list', methods=['GET','POST'])
+def getAllSkillList():
+    skills=Skill.getSkills()
+    skillsDict=dataChangeService.getAllSkills(skills)
+    result=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,skillsDict)
+    return  json.dumps(result.__dict__,ensure_ascii=False)
+

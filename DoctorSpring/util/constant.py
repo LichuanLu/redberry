@@ -148,6 +148,7 @@ class RoleId(object):
     Kefu=6
 class DiagnoseLogAction(object):
     NewDiagnoseAction='提出诊断申请'
+    SendMessageToUser='为用户发送注册短信'
     FetchDiagnoseAction='正在分发诊断'
     FetchDiagnoseEndAction='分发诊断完成'
     TriageDiagnoseAction='正在进行诊断'
@@ -185,6 +186,12 @@ class DoctorType(object):
     HospitalUser=1
 
 DiagnoseCost=0.03
+class DiagnoseMethod(object):
+    Mri="mri"
+    Ct="ct"
+class DiagnoseMethodCost(object):
+    Mri=0.2
+    Ct=0.4
 
 
 

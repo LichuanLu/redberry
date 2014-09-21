@@ -30,10 +30,22 @@ def userCenterDiagnoses(diagnoses):
         if diagnose.status or diagnose.status==0:
             diagDict['statusId']=diagnose.status
             diagDict['status']=constant.DiagnoseStatus.getStatusName(diagnose.status)
+        dicomUrl=None
+        otherUrls=None
         if diagnose.pathologyId:
             dicomUrl=File.getDicomFileUrl(diagnose.pathologyId)
             if dicomUrl:
-                diagDict['dicomUrl'] = dicomUrl
+                diagDict['hasDicom'] = True
+            else:
+                diagDict['hasDicom'] = False
+            otherUrls=File.getFilesUrl(diagnose.pathologyId)
+            if otherUrls:
+                diagDict['hasDoc']=True
+            else:
+                diagDict['hasDoc']=False
+        diagDict['dicomUrl'] = dicomUrl
+        diagDict['docUrl']=otherUrls
+
         if hasattr(diagnose,'report') and diagnose.report and diagnose.report.fileUrl:
             diagDict['reportUrl']= diagnose.report.fileUrl
 
@@ -58,6 +70,73 @@ def userCenterDiagnoses(diagnoses):
         result.append(diagDict)
 
     return result
+def getDiagnoseListByKefu(diagnoses):
+    if diagnoses is None or len(diagnoses)<1:
+        return
+    result=[]
+    for diagnose in diagnoses:
+        diagDict={}
+
+        if hasattr(diagnose,"patient") and diagnose.patient and diagnose.patient.realname:
+            diagDict['patientName']=diagnose.patient.realname
+        if hasattr(diagnose,"doctor") and diagnose.doctor and diagnose.doctor.username:
+            diagDict['doctorName']=diagnose.doctor.username
+            if hasattr(diagnose.doctor,'hospital') and diagnose.doctor.hospital and diagnose.doctor.hospital.name:
+                diagDict['doctorHispital']= diagnose.doctor.hospital.name
+
+        if hasattr(diagnose,"hospital") and diagnose.hospital and diagnose.hospital.name:
+            diagDict['hispital']=diagnose.hospital.name
+
+
+        if diagnose.createDate:
+            diagDict["date"]=diagnose.createDate.strftime('%Y-%m-%d')
+        if diagnose.id:
+            diagDict['id']=diagnose.id
+        if diagnose.diagnoseSeriesNumber:
+            diagDict['diagnosenumber']=diagnose.diagnoseSeriesNumber
+        if diagnose.status or diagnose.status==0:
+            diagDict['statusId']=diagnose.status
+            diagDict['status']=constant.DiagnoseStatus.getStatusName(diagnose.status)
+        if diagnose.pathologyId:
+            dicomUrl=File.getDicomFileUrl(diagnose.pathologyId)
+            if dicomUrl:
+                diagDict['dicomUrl'] = dicomUrl
+            otherUrls=File.getFilesUrl(diagnose.pathologyId)
+            if otherUrls:
+                diagDict['otherUrls']=otherUrls
+        if hasattr(diagnose,'report') and diagnose.report and diagnose.report.fileUrl:
+            diagDict['reportUrl']= diagnose.report.fileUrl
+
+
+        if hasattr(diagnose,"pathology") and diagnose.pathology:
+            pathology=diagnose.pathology
+            postionLen=0
+            if hasattr(pathology,"pathologyPostions") and pathology.pathologyPostions:
+                pathologyPositons=pathology.pathologyPostions
+                postionLen=len(pathologyPositons)
+                if pathologyPositons and len(pathologyPositons)>0:
+                    positions=u''
+                    for pathologyPositon in pathologyPositons:
+                        position=pathologyPositon.position
+                        positions+=(u' '+position.name)
+                    diagDict['positionName']=positions
+            #print diagDict['doctorName'],diagDict['positons']
+            if pathology.diagnoseMethod==constant.DiagnoseMethod.Mri:
+                diagDict['cost']=postionLen*constant.DiagnoseMethodCost.Mri
+            elif pathology.diagnoseMethod==constant.DiagnoseMethod.Ct:
+                diagDict['cost']=postionLen*constant.DiagnoseMethodCost.Ct
+
+
+
+        isFeedback=Comment.existCommentBydiagnose(diagnose.id,type=constant.CommentType.DiagnoseComment)
+        diagDict['isFeedback']=isFeedback
+
+
+        result.append(diagDict)
+
+    return result
+
+
 def getDiagnoseDetailInfo(diagnose):
     if diagnose is None:
         return
@@ -505,5 +584,51 @@ def setConsultsResult(consutsDict):
                     consutDict['userName']=user.name
                     consutDict['avartarUrl']=user.imagePath
         consutDict['amount']=consutDict.get('count')
+
+def getAllHospital(hospitals):
+    if hospitals is None or len(hospitals)<1:
+        return
+    result=[]
+
+    for hospital in hospitals:
+        hospitalDict={}
+        hospitalDict['id']=hospital.id
+        if hospital.name:
+            hospitalDict['name']=hospital.name
+        result.append(hospitalDict)
+
+    return result
+
+
+def getAllDepartments(departments):
+    if departments is None or len(departments)<1:
+        return
+    result=[]
+
+    for department in departments:
+        departmentDict={}
+        departmentDict['id']=department.id
+        if department.name:
+            departmentDict['name']=department.name
+        result.append(departmentDict)
+
+    return result
+
+
+
+def getAllSkills(skills):
+    if skills is None or len(skills)<1:
+        return
+    result=[]
+
+    for skill in skills:
+        skillDict={}
+        skillDict['id']=skill.id
+        if skill.name:
+            skillDict['name']=skill.name
+        result.append(skillDict)
+
+    return result
+
 
 

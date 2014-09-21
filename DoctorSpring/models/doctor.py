@@ -224,6 +224,9 @@ class Department(Base):
             session.add(department)
             session.commit()
             session.flush()
+    @staticmethod
+    def getAllDepartments():
+        return session.query(Department).filter(Department.status==ModelStatus.Normal).all()
 
 class DoctorProfile(Base):
     __tablename__ = 'doctor_profile'
