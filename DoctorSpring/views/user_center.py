@@ -716,6 +716,7 @@ def avatarfileUpload():
     userId=None
     if session.has_key('userId'):
         userId=session['userId']
+    userId=request.args.get("userId")
     if userId is None:
         return redirect(LOGIN_URL)
     user=User.getById(userId)
