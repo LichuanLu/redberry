@@ -79,6 +79,8 @@ def getDiagnoseListByKefu(diagnoses):
 
         if hasattr(diagnose,"patient") and diagnose.patient and diagnose.patient.realname:
             diagDict['patientName']=diagnose.patient.realname
+        if hasattr(diagnose,"patient") and diagnose.patient:
+            diagDict['mobile']=diagnose.patient.identityPhone
         if hasattr(diagnose,"doctor") and diagnose.doctor and diagnose.doctor.username:
             diagDict['doctorName']=diagnose.doctor.username
             if hasattr(diagnose.doctor,'hospital') and diagnose.doctor.hospital and diagnose.doctor.hospital.name:
@@ -122,9 +124,11 @@ def getDiagnoseListByKefu(diagnoses):
                     diagDict['positionName']=positions
             #print diagDict['doctorName'],diagDict['positons']
             if pathology.diagnoseMethod==constant.DiagnoseMethod.Mri:
-                diagDict['cost']=postionLen*constant.DiagnoseMethodCost.Mri
+                diagDict['payAmount']=postionLen*constant.DiagnoseMethodCost.Mri
+                diagDict['diagnoseMethod']=constant.DiagnoseMethod.Mri
             elif pathology.diagnoseMethod==constant.DiagnoseMethod.Ct:
-                diagDict['cost']=postionLen*constant.DiagnoseMethodCost.Ct
+                diagDict['payAmount']=postionLen*constant.DiagnoseMethodCost.Ct
+                diagDict['diagnoseMethod']=constant.DiagnoseMethod.Ct
 
 
 
