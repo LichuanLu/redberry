@@ -369,8 +369,6 @@ def AlipayCallbackUrl():
     if diagnose is None or (not hasattr(diagnose,"patient")) or diagnose.patient.userID is None:
          LOG.error("支付回调出错，无法拿到诊断[diagnoseSeriesNumber%s]"%params.diagnoseSeriesNumber)
     userId= diagnose.patient.userID
-
-
     payRecord=AlipayChargeRecord(params.diagnoseSeriesNumber,params.buyer_email,params.buyer_id,params.is_success,params.notify_time,
                        params.notify_type,params.total_fee,params.trade_no,params.trade_status,params.out_trade_no)
     AlipayChargeRecord.save(payRecord)
