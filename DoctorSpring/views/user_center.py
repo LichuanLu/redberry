@@ -565,16 +565,16 @@ def addThankNote():
 
 @uc.route('/gratitude/changestatus',  methods = ['GET', 'POST'])
 def changeThankNoteStatus():
-    id=request.args.get('id')
-    status=request.args.get('status')
+    id=request.form.get('id')
+    status=request.form.get('status')
     userId=session.get('userId')
 
     #userId='5'
 
-    if userId is None:
-        json.dumps(rs.NO_LOGIN.__dict__,ensure_ascii=False)
-
-    userId=string.atoi(userId)
+    # if userId is None:
+    #     json.dumps(rs.NO_LOGIN.__dict__,ensure_ascii=False)
+    #
+    # userId=string.atoi(userId)
     if id and status:
         result=ThanksNote.updateThankNote(id,status)
         return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
@@ -594,7 +594,12 @@ def getThanksNotesByDraft():
         return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
     thanksNotesDict=object2dict.objects2dicts(thanksNotes)
     dataChangeService.setThanksNoteDetail(thanksNotesDict)
-    resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,thanksNotesDict)
+    data={}
+    data['amount']=0
+    if thanksNotesDict:
+        data['amount']=len(thanksNotesDict)
+    data['list']=thanksNotesDict
+    resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,data)
     resultDict=resultStatus.__dict__
     return json.dumps(resultDict,ensure_ascii=False)
 
@@ -751,9 +756,13 @@ def doctorListByDraft():
         pageSize=request.args.get('pageSize')
         pager=Pagger(pageNo,pageSize)
         doctors=Doctor.getUserListByStatus(pager)
-
         doctorsDict=dataChangeService.get_doctors_dict(doctors)
-        result=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,doctorsDict)
+        data={}
+        data['amount']=0
+        if doctorsDict:
+            data['amount']=len(doctorsDict.get('doctor'))
+        data['list']=doctorsDict.get('doctor')
+        result=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,data)
         return json.dumps(result.__dict__,ensure_ascii=False)
     except Exception,e:
         LOG.error(e.message)

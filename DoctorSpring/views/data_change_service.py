@@ -434,6 +434,7 @@ def get_doctor(doctor):
         doctorDict['identityPhone']=doctor.identityPhone
     if hasattr(doctor, "username") and doctor.username:
         doctorDict['doctorname'] = doctor.username
+        doctorDict['username'] = doctor.username
     if hasattr(doctor, "title") and doctor.title:
         doctorDict["doctortitle"] = doctor.title
     if hasattr(doctor, "doctorSkills") and len(doctor.doctorSkills) >= 1:

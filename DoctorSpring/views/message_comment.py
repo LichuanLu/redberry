@@ -97,13 +97,18 @@ def diagnoseCommentsByDraft():
 
     diagnoseCommentsDict=object2dict.objects2dicts(diagnoseComments)
     dataChangeService.setDiagnoseCommentsDetailInfo(diagnoseCommentsDict)
-    resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,diagnoseCommentsDict)
+    data={}
+    data['amount']=0
+    if diagnoseCommentsDict:
+        data['amount']=len(diagnoseCommentsDict)
+    data['list']=diagnoseCommentsDict
+    resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,data)
     resultDict=resultStatus.__dict__
     return jsonify(resultDict)
 @mc.route('/diagnosecomment/statuschange', methods = ['GET', 'POST'])
 def changeDiagnoseCommentStatus():
-    id=request.args.get('id')
-    status=request.args.get('status')
+    id=request.form.get('id')
+    status=request.form.get('status')
     if id and status:
         result=Comment.updateComment(id,status)
         return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
