@@ -17,8 +17,8 @@ class DiagnoseForm1(object):
     diagnoseId = None
     def __init__(self, args):
 
-        if 'type' in args.keys() and args.get('type') == 1:
-            isHospitalUser = True
+        if 'isHospitalUser' in args.keys() and args.get('isHospitalUser') == u'1':
+            self.isHospitalUser = True
 
         if 'diagnoseId' in args.keys():
             self.diagnoseId = args.get('diagnoseId')

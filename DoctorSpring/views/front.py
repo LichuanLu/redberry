@@ -172,9 +172,10 @@ def applyDiagnoseForm(formid):
                 # Hospital User 注册用户
                 if(form.isHospitalUser):
                     passwd=random.sample('zyxwvutsrqponmlkjihgfedcba1234567890',6)
-                    new_user = User(form.phonenumber, passwd, False)
+                    passwd = ''.join(passwd)
+                    new_user = User(form.patientname,form.phonenumber, passwd, True)
                     new_user.type = UserStatus.patent
-                    new_user.status = ModelStatus.Draft
+                    new_user.status = ModelStatus.Normal
                     User.save(new_user)
                     new_patient.userID = new_user.id
                     Patient.save(new_patient)
