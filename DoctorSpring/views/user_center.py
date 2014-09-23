@@ -771,12 +771,8 @@ def doctorListByDraft():
 @uc.route('/doctor/statuschange', methods=['GET','POST'])
 def doctorStatusChange():
     try:
-        userid=session.get('userId')
-        if userid is None:
-            return redirect(LOGIN_URL)
-
-        userid=string.atoi(userid)
-        status=request.args.get('status')
+        userid=request.form.get('userId')
+        status=request.form.get('status')
         if status:
             status=string.atoi(status)
         else:
