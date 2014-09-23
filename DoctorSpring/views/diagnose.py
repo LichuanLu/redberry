@@ -360,7 +360,7 @@ def generateAlipayUrl(diagnoseId):
 
 @diagnoseView.route('/diagnose/alipayurl/callback',  methods = ['GET', 'POST'])
 def AlipayCallbackUrl():
-    userId='9'
+    #userId='9'
     if session.has_key('userId'):
         userId=session['userId']
     if userId is None:
