@@ -138,6 +138,14 @@ class Doctor(Base):
             doctorNeedChange.username=doctor.username
         if doctor.identityPhone:
             doctorNeedChange.identityPhone=doctor.identityPhone
+        # if doctor.status:
+        #     doctorNeedChange.status=doctor.status
+        if doctor.title:
+            doctorNeedChange.title=doctor.title
+        if doctor.departmentId:
+            doctorNeedChange.departmentId=doctor.departmentId
+        if doctor.userId:
+            doctorNeedChange.userId=doctor.userId
         session.commit()
         session.flush()
         return doctorNeedChange.hospitalId

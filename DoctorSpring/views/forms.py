@@ -535,3 +535,17 @@ class AlipayCallBackInfo(object):
         self.trade_no=args.get('trade_no')
         self.trade_status=args.get('trade_status')
         self.out_trade_no=args.get('out_trade_no')
+class DoctorUpdateForm(object):
+    hospital=None
+    department=None
+    skills=None
+    title=None
+    userId=None
+    status=None
+    def __init__(self,form):
+        self.hospital=form.get('hospital')
+        self.department=form.get('department')
+        self.skills=form.get('skill')
+        self.title=form.get('title')
+        self.userId=form.get('userId')
+        self.status=form.get('status')

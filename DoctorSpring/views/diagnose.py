@@ -365,9 +365,21 @@ def AlipayCallbackUrl():
     if params.diagnoseSeriesNumber is None:
         LOG.error("支付回调出错，无法拿到diagnoseSeriesNumber")
         redirect(ERROR_URL)
+    if params.trade_no or params.out_trade_no or params.trade_status:
+        LOG.error("支付回调出错，tradeNo")
+        redirect(ERROR_URL)
+
+    alipay.notify_verify()
     diagnose=Diagnose.getDiagnoseByDiagnoseSeriesNo(params.diagnoseSeriesNumber)
     if diagnose is None or (not hasattr(diagnose,"patient")) or diagnose.patient.userID is None:
          LOG.error("支付回调出错，无法拿到诊断[diagnoseSeriesNumber%s]"%params.diagnoseSeriesNumber)
+    verfyParams={}
+    verfyParams['out_trade_no']=params.out_trade_no
+    verfyParams['trade_status']='TRADE_SUCCESS'
+    verfyParams['trade_no']=params.trade_no
+    veryResult=alipay.notify_verify(verfyParams)
+    if not veryResult:
+        LOG.error("支付交易出错，无法拿到诊断[diagnoseSeriesNumber%s]"%params.diagnoseSeriesNumber)
     userId= diagnose.patient.userID
     payRecord=AlipayChargeRecord(params.diagnoseSeriesNumber,params.buyer_email,params.buyer_id,params.is_success,params.notify_time,
                        params.notify_type,params.total_fee,params.trade_no,params.trade_status,params.out_trade_no)

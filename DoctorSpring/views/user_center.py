@@ -4,12 +4,12 @@ __author__ = 'ccheng'
 from flask import Flask, request, session, g, redirect, url_for, Blueprint, jsonify
 from flask import abort, render_template, flash
 from flask.ext.login import login_user, logout_user, current_user, login_required
-from forms import LoginForm ,CommentsForm ,UserFavortiesForm,ThanksNoteForm ,UserUpdateForm,UserChangePasswdForm
+from forms import LoginForm ,CommentsForm ,UserFavortiesForm,ThanksNoteForm ,UserUpdateForm,UserChangePasswdForm,DoctorUpdateForm
 from DoctorSpring import lm
 from database import  db_session
 from sqlalchemy.exc import IntegrityError
 from DoctorSpring.models import User,Patient,Doctor,Diagnose ,DiagnoseTemplate,DoctorProfile ,Department,Skill
-from DoctorSpring.models import User,Comment,Message ,UserFavorites,UserRole ,ThanksNote,Hospital
+from DoctorSpring.models import User,Comment,Message ,UserFavorites,UserRole ,ThanksNote,Hospital ,Doctor2Skill
 from DoctorSpring.util import result_status as rs,object2dict,pdf_utils,constant
 from DoctorSpring.util.constant import MessageUserType,Pagger,ReportType,ReportStatus
 from DoctorSpring.util.authenticated import authenticated
@@ -886,3 +886,20 @@ def getAllSkillList():
     result=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,skillsDict)
     return  json.dumps(result.__dict__,ensure_ascii=False)
 
+
+@uc.route('/doctor/updateinfo', methods=['GET','POST'])
+def updateDoctorInfo():
+    form=DoctorUpdateForm(request.form)
+    doctor=Doctor(form.userId)
+    doctor.departmentId=form.department
+    doctor.hospitalId=form.hospital
+    doctor.status=form.status
+    doctor.title=form.title
+    Doctor.update(doctor)
+    doctor=Doctor.getByUserId(form.userId)
+    if doctor:
+        for skill in form.skills:
+            doctorsKill=Doctor2Skill(doctor.id,skill)
+            Doctor2Skill.save(doctorsKill)
+    result=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,None)
+    return  json.dumps(result.__dict__,ensure_ascii=False)
