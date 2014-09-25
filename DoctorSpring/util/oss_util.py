@@ -133,7 +133,7 @@ def uploadAvatarFromFileStorage(userId,fileName,input_content,content_type,heade
         print "Please make sure ACCESS_ID and SECRET_ACCESS_KEY are correct in ", __file__ , ", init are empty!"
         exit(0)
     oss = OssAPI(HOST, ACCESS_ID, SECRET_ACCESS_KEY)
-    bucket="solidmedical_avatar"
+    bucket="solidmedicalavatar"
     res = oss.create_bucket(bucket,"public-read")
     hashCode=hashlib.md5(str(fileName)).hexdigest().lower()
     ossFileName='%i_%s'%(userId,hashCode)
@@ -220,7 +220,11 @@ if __name__ == "__main__":
     # import  constant
     #
     # uploadFile(1,constant.DirConstant.DIAGNOSE_PDF_DIR+'test.pdf')
-    copyObjects()
+    #copyObjects()
+    oss = OssAPI(HOST, ACCESS_ID, SECRET_ACCESS_KEY)
+    bucket="solidmedicaltest123"
+    res = oss.create_bucket(bucket,"public-read")
+    print res
     #listdir('/1_c4ca4238a0b923820dcc509a6f75849b/')
 # #初始化
 #     if len(ACCESS_ID) == 0 or len(SECRET_ACCESS_KEY) == 0:

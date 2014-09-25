@@ -144,8 +144,8 @@ class Doctor(Base):
             doctorNeedChange.title=doctor.title
         if doctor.departmentId:
             doctorNeedChange.departmentId=doctor.departmentId
-        if doctor.userId:
-            doctorNeedChange.userId=doctor.userId
+        if doctor.hospitalId:
+            doctorNeedChange.hospitalId=doctor.hospitalId
         session.commit()
         session.flush()
         return doctorNeedChange.hospitalId

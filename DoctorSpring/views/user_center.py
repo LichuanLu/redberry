@@ -719,7 +719,8 @@ def avatarfileUpload():
         userId=session['userId']
     if userId is None:
         return redirect(LOGIN_URL)
-    user=User.getById(userId)
+    userId = string.atoi(userId)
+    user=User.getById(userId,None)
     if user is None:
         return  json.dumps(rs.ResultStatus(rs.FAILURE.status,"账户不存在"),ensure_ascii=False )
 
@@ -735,11 +736,11 @@ def avatarfileUpload():
                     fileurl = uploadAvatarFromFileStorage(userId, filename, file,'',{})
                     if fileurl:
                         user.imagePath=fileurl
+                        User.update(userId,imagePath=fileurl)
                         file_infos.append(dict(
                                            name=filename,
                                            url=fileurl))
-                        result=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,file_infos)
-                        return json.dumps(result.__dict__,ensure_ascii=False)
+                        return jsonify(files=file_infos)
                 else:
                     return json.dumps(rs.FAILURE.__dict__,ensure_ascii=False)
         return json.dumps(rs.FAILURE.__dict__,ensure_ascii=False)
@@ -897,9 +898,11 @@ def updateDoctorInfo():
     doctor.title=form.title
     Doctor.update(doctor)
     doctor=Doctor.getByUserId(form.userId)
+
     if doctor:
         for skill in form.skills:
             doctorsKill=Doctor2Skill(doctor.id,skill)
             Doctor2Skill.save(doctorsKill)
+    User.update(form.userId,status=constant.ModelStatus.Normal)
     result=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,None)
     return  json.dumps(result.__dict__,ensure_ascii=False)

@@ -77,15 +77,17 @@ class User(Base):
             session.commit()
             session.flush()
     @classmethod
-    def getById(cls, userId):
+    def getById(cls, userId,status=ModelStatus.Normal):
         if userId is None or userId < 1:
             return
-        return session.query(User).filter(User.id==userId,User.status==ModelStatus.Normal).first()
+        if status is None:
+            return session.query(User).filter(User.id==userId).first()
+        return session.query(User).filter(User.id==userId,User.status==status).first()
     @classmethod
-    def update(cls,userId,name=None,account=None,mobile=None,address=None,email=None,identityCode=None,yibaoCard=None,passwd=None,isBindPhone=None):
+    def update(cls,userId,name=None,account=None,mobile=None,address=None,email=None,identityCode=None,yibaoCard=None,passwd=None,isBindPhone=None,imagePath=None,status=None):
         if userId is None or userId<1:
             return
-        user=session.query(User).filter(User.id==userId,User.status==ModelStatus.Normal).first()
+        user=session.query(User).filter(User.id==userId).first()
         if user:
             if name:
                 user.name=name
@@ -105,6 +107,10 @@ class User(Base):
                 user.password=passwd
             if isBindPhone:
                 user.isBindPhone= isBindPhone
+            if imagePath:
+                user.imagePath=imagePath
+            if status or status==0:
+                user.status=status
             session.commit()
             session.flush()
             return user

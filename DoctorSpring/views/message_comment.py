@@ -189,7 +189,6 @@ def addConsult():
     user_id=None
     if session.has_key('userId'):
         userId=session['userId']
-    userId='5'
     if userId is None:
         redirect(LOGIN_URL)
     form =  ConsultForm(request.form)
