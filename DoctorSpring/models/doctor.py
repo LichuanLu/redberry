@@ -129,9 +129,11 @@ class Doctor(Base):
     def update(cls,doctor):
         if doctor is None or doctor.userId is None:
             return
-        doctorNeedChange=session.query(Doctor).filter(Doctor.userId==doctor.userId,Doctor.status==ModelStatus.Normal).first()
+        doctorNeedChange=session.query(Doctor).filter(Doctor.userId==doctor.userId,Doctor.status==ModelStatus.Draft).first()
         if doctorNeedChange is None:
             return
+        if doctor.status:
+            doctorNeedChange.status = doctor.status
         if doctor.username:
             doctorNeedChange.username=doctor.username
         if doctor.identityPhone:

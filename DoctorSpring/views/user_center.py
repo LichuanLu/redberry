@@ -714,9 +714,9 @@ def changePasswd():
 @uc.route('/account/uploadAvatar', methods=['GET','POST'])
 def avatarfileUpload():
     userId=None
-    if session.has_key('userId'):
+    userId=request.form.get("userId")
+    if session.has_key('userId') and userId is None:
         userId=session['userId']
-    userId=request.args.get("userId")
     if userId is None:
         return redirect(LOGIN_URL)
     user=User.getById(userId)

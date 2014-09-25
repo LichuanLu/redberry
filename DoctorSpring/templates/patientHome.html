@@ -15,9 +15,9 @@
 {% endblock breadcrumbsHolder %}
 {% block contentHolder %}
 
-<div id="patienthome-content" class="main-content-padding" data-userid="5">
+<div id="patienthome-content" class="main-content-padding" data-userid="{{data.user.id}}">
     <div class="content-wrapper row">
-        <div class="col-md-3 nopadding" id="patient-actions" data-diagnose-id="145">
+        <div class="col-md-3 nopadding" id="patient-actions">
 
             <nav class="left-menu">
                 <div class="user-wrapper content-head-wrapper">

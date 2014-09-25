@@ -468,8 +468,8 @@ def sendRegisterMobileMessage(userId,diagnose,phoneNumber,passwd):
 @login_required
 def disableFile():
     try:
-        disgnoseId=request.args.get('diagnoseId')
-        type=request.args.get('type')
+        disgnoseId=request.form.get('diagnoseId')
+        type=request.form.get('type')
         if disgnoseId is None :
             disgnoseId=string.atoi(disgnoseId)
         if type is None:
