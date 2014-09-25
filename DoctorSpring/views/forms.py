@@ -545,7 +545,7 @@ class DoctorUpdateForm(object):
     def __init__(self,form):
         self.hospital=form.get('hospital')
         self.department=form.get('department')
-        self.skills=form.get('skill')
+        self.skills=form.getlist('skill')
         self.title=form.get('title')
         self.userId=form.get('userId')
         self.status=form.get('status')
