@@ -170,7 +170,8 @@ def applyDiagnoseForm(formid):
                 Diagnose.save(new_diagnose)
 
                 # Hospital User 注册用户
-                if(form.isHospitalUser):
+                if form.isHospitalUser and (not form.exist):
+
                     passwd=random.sample('zyxwvutsrqponmlkjihgfedcba1234567890',6)
                     passwd = ''.join(passwd)
                     new_user = User(form.patientname,form.phonenumber, passwd, True)
@@ -479,7 +480,7 @@ def disableFile():
         diagnose=Diagnose.getDiagnoseById(disgnoseId)
         if diagnose and diagnose.pathologyId:
             pathologyId=diagnose.pathologyId
-            result=File.deleteFileByPathologyId(pathologyId)
+            result=File.deleteFileByPathologyId(pathologyId,type)
             if result>0:
                 return jsonify(rs.SUCCESS.__dict__, ensure_ascii=False)
         return jsonify(rs.FAILURE.__dict__, ensure_ascii=False)
