@@ -107,7 +107,7 @@ def getDiagnoseIdFromFileName(fileName):
             diagnoeId=fileNames[0]
             return diagnoeId
 
-def uploadFileFromFileStorage(diagnoseId,fileName,input_content,content_type,headers):
+def uploadFileFromFileStorage(diagnoseId,fileName,input_content,content_type,headers,extension='jpg'):
     if len(ACCESS_ID) == 0 or len(SECRET_ACCESS_KEY) == 0:
         print "Please make sure ACCESS_ID and SECRET_ACCESS_KEY are correct in ", __file__ , ", init are empty!"
         exit(0)
@@ -115,7 +115,7 @@ def uploadFileFromFileStorage(diagnoseId,fileName,input_content,content_type,hea
     bucket="solidmedicaltest"
     res = oss.create_bucket(bucket,"public-read")
     hashCode=hashlib.md5(str(fileName)).hexdigest().lower()
-    ossFileName='%i_%s'%(diagnoseId,hashCode)
+    ossFileName='%i_%s.%s'%(diagnoseId,hashCode,extension)
     #res = oss.upload_large_file(bucket, ossFileName, fileName)
     # res2=oss.put_object_from_file(bucket,ossFileName,fileName)
     #info=oss.get_object_to_file(bucket,ossFileName,fileName)

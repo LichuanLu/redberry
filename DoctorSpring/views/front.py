@@ -307,9 +307,10 @@ def fileUpload():
             for key, file in files.iteritems():
                 if file and allowed_file(file.filename):
                     filename = file.filename
+                    extension=extension(filename)
                     # file_url = oss_util.uploadFile(diagnoseId, filename)
                     from DoctorSpring.util.oss_util import uploadFileFromFileStorage
-                    fileurl = uploadFileFromFileStorage(diagnoseId, filename, file,'',{})
+                    fileurl = uploadFileFromFileStorage(diagnoseId, filename, file,'',{},extension)
 
 
                     new_file = File(type, filename, '11', fileurl,diagnose.pathologyId)
@@ -505,9 +506,10 @@ def dicomfileUpload():
             for key, file in files.iteritems():
                 if file and allowed_file(file.filename):
                     filename = file.filename
+                    extension=extension(filename)
                     # file_url = oss_util.uploadFile(diagnoseId, filename)
                     from DoctorSpring.util.oss_util import uploadFileFromFileStorage
-                    fileurl = uploadFileFromFileStorage(diagnoseId, filename, file,'',{})
+                    fileurl = uploadFileFromFileStorage(diagnoseId, filename, file,'',{},extension)
 
 
                     new_file = File(FileType.Dicom, filename, '11', fileurl,None)
@@ -538,9 +540,10 @@ def patientReportUpload():
             for key, file in files.iteritems():
                 if file and allowed_file(file.filename):
                     filename = file.filename
+                    extension=extension(filename)
                     # file_url = oss_util.uploadFile(diagnoseId, filename)
                     from DoctorSpring.util.oss_util import uploadFileFromFileStorage
-                    fileurl = uploadFileFromFileStorage(diagnoseId, filename, file,'',{})
+                    fileurl = uploadFileFromFileStorage(diagnoseId, filename, file,'',{},extension)
 
                     new_file = File(FileType.FileAboutDiagnose, filename, '11', fileurl,None)
                     File.save(new_file)
@@ -561,6 +564,9 @@ def patientReportUpload():
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+def extension(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1]
 
 @front.route('/uploads/<filename>')
 @login_required
