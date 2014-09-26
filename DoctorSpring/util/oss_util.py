@@ -114,8 +114,8 @@ def uploadFileFromFileStorage(diagnoseId,fileName,input_content,content_type,hea
     oss = OssAPI(HOST, ACCESS_ID, SECRET_ACCESS_KEY)
     bucket="solidmedicaltest"
     res = oss.create_bucket(bucket,"public-read")
-    hashCode=hashlib.md5(str(fileName)).hexdigest().lower()
-    ossFileName='%i_%s.%s'%(diagnoseId,hashCode,extension)
+    #hashCode=hashlib.md5(str(fileName)).hexdigest().lower()
+    ossFileName=getFileName(diagnoseId,fileName,extension)
     #res = oss.upload_large_file(bucket, ossFileName, fileName)
     # res2=oss.put_object_from_file(bucket,ossFileName,fileName)
     #info=oss.get_object_to_file(bucket,ossFileName,fileName)
@@ -127,7 +127,10 @@ def uploadFileFromFileStorage(diagnoseId,fileName,input_content,content_type,hea
         fileUrl='http://%s.%s/%s'%(bucket,WEB_HOST,ossFileName)
         return fileUrl
 
-
+def getFileName(diagnoseId,fileName,extension):
+    hashCode=hashlib.md5(str(fileName)).hexdigest().lower()
+    ossFileName='%i_%s.%s'%(diagnoseId,hashCode,extension)
+    return ossFileName
 def uploadAvatarFromFileStorage(userId,fileName,input_content,content_type,headers):
     if len(ACCESS_ID) == 0 or len(SECRET_ACCESS_KEY) == 0:
         print "Please make sure ACCESS_ID and SECRET_ACCESS_KEY are correct in ", __file__ , ", init are empty!"
