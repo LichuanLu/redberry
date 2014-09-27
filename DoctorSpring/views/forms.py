@@ -524,6 +524,7 @@ class AlipayCallBackInfo(object):
     total_fee=None
     trade_no=None
     trade_status=None
+    sign=None
     def __init__(self,args):
         self.diagnoseSeriesNumber=args.get('subject')
         self.buyer_email=args.get('buyer_email')
@@ -535,6 +536,7 @@ class AlipayCallBackInfo(object):
         self.trade_no=args.get('trade_no')
         self.trade_status=args.get('trade_status')
         self.out_trade_no=args.get('out_trade_no')
+        self.sign=args.get('sign')
 class DoctorUpdateForm(object):
     hospital=None
     department=None

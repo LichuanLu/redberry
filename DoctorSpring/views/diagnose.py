@@ -316,11 +316,10 @@ def evaluateDiagnose(diagnoseId):
 
 @diagnoseView.route('/diagnose/alipayurl/<int:diagnoseId>',  methods = ['GET', 'POST'])
 def generateAlipayUrl(diagnoseId):
-    userId='9'
     if session.has_key('userId'):
         userId=session['userId']
     if userId is None:
-        redirect(LOGIN_URL)
+        return redirect(LOGIN_URL)
     diagnose=Diagnose.getDiagnoseById(diagnoseId)
 
     if diagnose and hasattr(diagnose,'patient') and string.atoi(userId)!=diagnose.patient.userID:
@@ -364,22 +363,23 @@ def AlipayCallbackUrl():
     params=AlipayCallBackInfo(request.args)
     if params.diagnoseSeriesNumber is None:
         LOG.error("支付回调出错，无法拿到diagnoseSeriesNumber")
-        redirect(ERROR_URL)
-    if params.trade_no or params.out_trade_no or params.trade_status:
+        return redirect(ERROR_URL)
+    if (not params.trade_no) or (not params.out_trade_no) or (not params.trade_status):
         LOG.error("支付回调出错，tradeNo")
-        redirect(ERROR_URL)
+        return redirect(ERROR_URL)
 
-    alipay.notify_verify()
     diagnose=Diagnose.getDiagnoseByDiagnoseSeriesNo(params.diagnoseSeriesNumber)
     if diagnose is None or (not hasattr(diagnose,"patient")) or diagnose.patient.userID is None:
          LOG.error("支付回调出错，无法拿到诊断[diagnoseSeriesNumber%s]"%params.diagnoseSeriesNumber)
-    verfyParams={}
-    verfyParams['out_trade_no']=params.out_trade_no
-    verfyParams['trade_status']='TRADE_SUCCESS'
-    verfyParams['trade_no']=params.trade_no
-    veryResult=alipay.notify_verify(verfyParams)
-    if not veryResult:
-        LOG.error("支付交易出错，无法拿到诊断[diagnoseSeriesNumber%s]"%params.diagnoseSeriesNumber)
+    #跳过验证，以后再测试，必须传入notify_id
+    # verfyParams={}
+    # verfyParams['out_trade_no']=params.out_trade_no
+    # verfyParams['trade_status']='TRADE_SUCCESS'
+    # verfyParams['trade_no']=params.trade_no
+    # verfyParams['sign']= params.sign
+    # veryResult=alipay.notify_verify(request.args)
+    # if not veryResult:
+    #     LOG.error("支付交易出错，无法拿到诊断[diagnoseSeriesNumber%s]"%params.diagnoseSeriesNumber)
     userId= diagnose.patient.userID
     payRecord=AlipayChargeRecord(params.diagnoseSeriesNumber,params.buyer_email,params.buyer_id,params.is_success,params.notify_time,
                        params.notify_type,params.total_fee,params.trade_no,params.trade_status,params.out_trade_no)
@@ -411,7 +411,7 @@ def getDiagnoseLog():
     if session.has_key('userId'):
         userId=session['userId']
     if userId is None:
-        redirect(LOGIN_URL)
+        return redirect(LOGIN_URL)
 
     diagnoseLogs=AlipayLog.getAlipayLogsByUserId(userId)
     if diagnoseLogs and len(diagnoseLogs)>0:
@@ -426,7 +426,7 @@ def getDiagnoseLogBydiagnoseId(diagnoseId):
     if session.has_key('userId'):
         userId=session['userId']
     if userId is None:
-        redirect(LOGIN_URL)
+        return redirect(LOGIN_URL)
     diagnose=Diagnose.getDiagnoseById(diagnoseId)
     if diagnose and hasattr(diagnose,'patient') and diagnose.patient.userID==string.atoi(userId):
         diagnoseLogs=AlipayLog.getAlipayLogsByDiagnoseId(diagnoseId)
