@@ -199,9 +199,11 @@ def applyDiagnoseForm(formid):
                 new_diagnose = Diagnose.getNewDiagnoseByStatus(DiagnoseStatus.Draft, int(session['userId']))
 
             if new_diagnose is not None:
-
+                #直接选择的病例，不是新建或者更改
+                isExistingPathology=False
                 if form.exist:
                     new_pathology = Pathology.getById(form.pathologyId)
+                    isExistingPathology=True
                 elif new_diagnose.pathologyId:
                     new_pathology = Pathology.getById(new_diagnose.pathologyId)
                 else:
@@ -209,22 +211,22 @@ def applyDiagnoseForm(formid):
 
                 if new_pathology is None:
                     new_pathology = Pathology(new_diagnose.patientId)
+                if not isExistingPathology:
+                    new_pathology.diagnoseMethod = form.dicomtype
+                    new_pathology.status = ModelStatus.Draft
+                    new_pathology.save(new_pathology)
 
-                new_pathology.diagnoseMethod = form.dicomtype
-                new_pathology.status = ModelStatus.Draft
-                new_pathology.save(new_pathology)
+                    PathologyPostion.deleteByPathologyId(new_pathology.id)
+                    for position in form.patientlocation:
+                        new_position_id = PathologyPostion(new_pathology.id, position)
+                        PathologyPostion.save(new_position_id)
 
-                PathologyPostion.deleteByPathologyId(new_pathology.id)
-                for position in form.patientlocation:
-                    new_position_id = PathologyPostion(new_pathology.id, position)
-                    PathologyPostion.save(new_position_id)
-
-                File.cleanDirtyFile(form.fileurl, new_pathology.id, FileType.Dicom)
-                if form.fileurl and len(form.fileurl) > 0:
-                    for fileurl in form.fileurl:
-                        new_file = File.getFilebyId(int(fileurl))
-                        new_file.pathologyId = new_pathology.id
-                        File.save(new_file)
+                    File.cleanDirtyFile(form.fileurl, new_pathology.id, FileType.Dicom)
+                    if form.fileurl and len(form.fileurl) > 0:
+                        for fileurl in form.fileurl:
+                            new_file = File.getFilebyId(int(fileurl))
+                            new_file.pathologyId = new_pathology.id
+                            File.save(new_file)
                 new_diagnose.pathologyId = new_pathology.id
                 Diagnose.save(new_diagnose)
                 form_result.data = {'formId': 4}
@@ -554,6 +556,7 @@ def patientReportUpload():
                     size=size(newFileName)
                     file_infos.append(dict(id=new_file.id,
                                            name=filename,
+                                           size=size,
                                            size=size,
                                            url=fileurl))
 
