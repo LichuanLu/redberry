@@ -193,6 +193,10 @@ class DiagnoseMethodCost(object):
     Mri=0.2
     Ct=0.4
 
+class MobileMessageConstant(object):
+    UrlPrefix="http://www.ezhenduan.com/pay/"
+    KefuPhone=40088888888
+
 
 
 

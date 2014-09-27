@@ -19,6 +19,8 @@ class RandCode(object):
     TEMPLATE_SEND_API = 'http://api.189.cn/v2/emp/templateSms/sendSms'
     #register verification code template
     TEMPLATE_ID_1 = '91002171'
+    TEMPLATE_REGISTER='91002505'
+    TEMPLATE_PAY='91002507'
 
 
     def __init__(self, app_id='', app_secret='', access_token=''):

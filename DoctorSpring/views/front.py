@@ -148,11 +148,24 @@ def applyDiagnoseForm(formid):
             else:
                 new_diagnose = Diagnose.getNewDiagnoseByStatus(DiagnoseStatus.Draft, int(session['userId']))
             if(new_diagnose is not None):
+                needcreateNewUserByHospitalUser=True
                 # 去拿没有draft的用户
                 if(form.exist):
+                    #select exist patient , from list, when modify exist diagnose
                     new_patient = Patient.get_patient_by_id(form.patientid)
                 else:
-                    new_patient = Patient.get_patient_draft(new_diagnose.patientId)
+                    #update draft patient when modify exist diagnose
+                    new_patient = Patient.getPatientDraftByPatienId(new_diagnose.patientId)
+                    if new_patient:
+                        new_patient.realname = form.patientname
+                        new_patient.gender = form.patientsex
+                        new_patient.birthDate = datetime.strptime(form.birthdate, "%Y-%m-%d")
+                        new_patient.identityCode = form.identitynumber
+                        new_patient.locationId = form.locationId
+                        new_patient.identityPhone = form.phonenumber
+                        Patient.save(new_patient)
+                        needcreateNewUserByHospitalUser=False
+                #create a new patient
                 if new_patient is None:
                     new_patient = Patient()
                     new_patient.type = PatientStatus.diagnose
@@ -170,7 +183,7 @@ def applyDiagnoseForm(formid):
                 Diagnose.save(new_diagnose)
 
                 # Hospital User 注册用户
-                if form.isHospitalUser and (not form.exist):
+                if form.isHospitalUser and (not form.exist) and needcreateNewUserByHospitalUser:
 
                     passwd=random.sample('zyxwvutsrqponmlkjihgfedcba1234567890',6)
                     passwd = ''.join(passwd)
@@ -442,8 +455,11 @@ def getAlipayHashCode():
 
 def sendMobileMessage(userId,diagnoseId,diagnose=None,message=None):
     telPhoneNo=None
-    if diagnose is None:
+
+    if diagnoseId:
         diagnose=Diagnose.getDiagnoseById(diagnoseId)
+    else:
+        diagnose=Diagnose.getDiagnoseById(diagnose.id)
 
     if diagnose and hasattr(diagnose,'patient') and diagnose.patient:
         telPhoneNo=diagnose.patient.identityPhone
@@ -454,8 +470,14 @@ def sendMobileMessage(userId,diagnoseId,diagnose=None,message=None):
         telPhoneNo=user.phone
     if telPhoneNo:
         smsRc=sms_utils.RandCode()
-        template_param = {'param1':'243455'}
-        smsRc.send_emp_sms(telPhoneNo,smsRc.TEMPLATE_ID_1,json.dumps(template_param))
+        param1=diagnose.diagnoseSeriesNumber
+        param3=constant.MobileMessageConstant.UrlPrefix+diagnose.alipayHashCode
+        param4=constant.MobileMessageConstant.KefuPhone
+        from DoctorSpring.util.helper import getPayCountByDiagnoseId
+        param2=getPayCountByDiagnoseId(diagnose.id)
+        template_param = {'param1':param1,'param2':param2,'param3':param3,'param4':param4}
+        smsRc.send_emp_sms(telPhoneNo,smsRc.TEMPLATE_PAY,json.dumps(template_param))
+
 def sendRegisterMobileMessage(userId,diagnose,phoneNumber,passwd):
     if userId and diagnose:
         new_diagnoselog = DiagnoseLog(userId, diagnose.id, DiagnoseLogAction.SendMessageToUser)
@@ -463,7 +485,7 @@ def sendRegisterMobileMessage(userId,diagnose,phoneNumber,passwd):
     if phoneNumber:
         smsRc=sms_utils.RandCode()
         template_param = {'param1':passwd}
-        smsRc.send_emp_sms(phoneNumber,smsRc.TEMPLATE_ID_1,json.dumps(template_param))
+        smsRc.send_emp_sms(phoneNumber,smsRc.TEMPLATE_REGISTER,json.dumps(template_param))
 
 @front.route('/file/disable', methods=['POST','GET'])
 @login_required

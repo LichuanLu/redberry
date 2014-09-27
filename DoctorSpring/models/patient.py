@@ -60,6 +60,10 @@ class Patient(Base):
     def get_patient_draft(cls, id):
         if id:
             return session.query(Patient).filter(Patient.userID == id, Patient.status == ModelStatus.Draft).first()
+    @classmethod
+    def getPatientDraftByPatienId(cls, id):
+        if id:
+            return session.query(Patient).filter(Patient.id == id, Patient.status.in_([ModelStatus.Draft,PatientStatus.diagnose])).first()
 
 
 '''
