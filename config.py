@@ -28,6 +28,8 @@ DEFAULT_FILE_STORAGE = 'filesystem'
 UPLOADS_FOLDER = os.path.realpath('.') + '/static/'
 FILE_SYSTEM_STORAGE_FILE_VIEW = 'static'
 
+MAX_CONTENT_LENGTH = 256 * 1024 * 1024
+
 # User
 DEFAULT_IMAGE = '/static/assets/image/young-m.png'
 DEFAULT_TITLE = '待定'
