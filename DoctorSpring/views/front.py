@@ -581,7 +581,6 @@ def patientReportUpload():
                     file_infos.append(dict(id=new_file.id,
                                            name=filename,
                                            size=size,
-                                           size=size,
                                            url=fileurl))
 
                 else:
@@ -594,7 +593,7 @@ def patientReportUpload():
 
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 def getFileExtension(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1]

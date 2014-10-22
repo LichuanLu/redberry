@@ -532,10 +532,11 @@ def get_pathology_list(pathologys):
 def get_pathology(pathology):
     pathologyDict={}
     pathologyDict['id'] = pathology.id
+    pathologyDict['dicomFile'] = getDocomFileName(pathology.id)
     if hasattr(pathology, "diagnoseMethod") and pathology.diagnoseMethod:
         pathologyDict['type'] = pathology.diagnoseMethod
-    if hasattr(pathology, "name") and pathology.name:
-        pathologyDict['dicomFile'] = pathology.name
+
+
     if hasattr(pathology, "pathologyPostions") and len(pathology.pathologyPostions) >= 1:
         positions = ''
         for position in pathology.pathologyPostions:
@@ -546,6 +547,14 @@ def get_pathology(pathology):
     pathologyDict["dicomUrl"] = dicomUrl
 
     return pathologyDict
+
+def getDocomFileName(pathologyId):
+    if pathologyId is None:
+        return
+    files=File.getFiles(pathologyId,constant.FileType.Dicom)
+    if files and len(files):
+        return files[0].name
+
 def getFilesResult(files):
     if files is None or len(files)<1:
         return None
