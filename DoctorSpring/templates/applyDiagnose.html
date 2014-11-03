@@ -138,16 +138,28 @@
 								<span class="required-text">（必填）</span>
 							</label>
 							<div class="input-wrapper">
+                                <div class="input-group date">
+                                    <input type="text" class="form-control" id="birthdateinput" name="birthdate" value="{%if result.patient%}{{result.patient.birthDate}}{%endif%}">
+                                    <span class="input-group-addon"><i class="fui-calendar"></i></span>
+                                </div>
 
-								<div class="input-group">
-									<span class="input-group-btn">
-										<button class="btn" type="button">
-											<span class="fui-calendar"></span>
-										</button>
-									</span>
-									<input type="text" class="form-control" value="{%if result.patient%}{{result.patient.birthDate}}{%endif%}" id="birthdateinput" name="birthdate"></div>
+								<!--<div class="input-group">-->
+									<!--<span class="input-group-btn">-->
+										<!--<button class="btn" type="button">-->
+											<!--<span class="fui-calendar"></span>-->
+										<!--</button>-->
+									<!--</span>-->
+									<!--<input type="text" class="form-control" value="{%if result.patient%}{{result.patient.birthDate}}{%endif%}" id="birthdateinput" name="birthdate">-->
+                                <!--</div>-->
 
 							</div>
+                                <!--<div class="right-box">-->
+                                    <!--<div class="line-area">-->
+                                        <!--<div class="line"></div>-->
+                                        <!--<div class="ball"></div>-->
+                                    <!--</div>-->
+                                    <!--<p class="side-description">日期格式：1980-01-01</p>-->
+                                <!--</div>-->
 						</div>
 
 						<div class="form-group">
@@ -190,8 +202,7 @@
  									<option value="-1">未选中</option>
                                     {%if result.locations%}
                                     {% for i in result.locations %}
-                                    <option value="{{i.id}}" {%if result.patient%}{%if result.patient.locationId == i.id %} selected {% endif %}{%endif
-                                    %}>{{i.name}}</option>
+                                    <option value="{{i.id}}" {%if result.patient%}{%if result.patient.locationId == i.id %} selected {% endif %}{%endif%}>{{i.name}}</option>
                                     {% endfor %}
                                     {%endif%}
 								</select>
