@@ -18,7 +18,7 @@ class Message(Base):
     sender=sa.Column(sa.Integer)
     receiver=sa.Column(sa.Integer)
     title= sa.Column(sa.String(256))
-    content=sa.Column(sa.String(51200))
+    content=sa.Column(sa.UnicodeText(51200))
     url=sa.Column(sa.String(512))#the url the message can be linked
     type=sa.Column(sa.Integer)#0:normal,1:system message,2:administrator message,3：分诊信息
     status=sa.Column(sa.Integer)#0:normal,1:delete,2:overdue

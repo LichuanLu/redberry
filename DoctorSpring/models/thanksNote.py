@@ -18,7 +18,7 @@ class ThanksNote(Base):
     sender=sa.Column(sa.Integer)
     receiver=sa.Column(sa.Integer)
     title= sa.Column(sa.String(256))
-    content=sa.Column(sa.String(51200))
+    content=sa.Column(sa.UnicodeText(51200))
     status=sa.Column(sa.Integer)#0:normal,1:delete,2:overdue
     createTime=sa.Column(sa.DateTime)
     def __init__(self,sender,receiver,title,content):
