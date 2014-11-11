@@ -2,7 +2,7 @@
 __author__ = 'jeremyxu'
 
 import unittest
-from DoctorSpring.models import Skill, Location, User, Doctor, Hospital, Department, Patient, Doctor2Skill ,Position, UserRole, DoctorProfile
+from DoctorSpring.models import Skill, Location, User, Doctor, Hospital, Department, Patient, Doctor2Skill ,Position, UserRole, DoctorProfile, DiagnosePayStats
 from DoctorSpring.util.constant import UserStatus, RoleId, DoctorProfileType, DoctorType
 from database import Base,db_session as session
 from DoctorSpring.models.comment import Comment
@@ -303,6 +303,85 @@ class UserTestCase(unittest.TestCase):
         new_userrole2 = UserRole(user.id, RoleId.Admin)
         UserRole.save(new_userrole2)
 
+import datetime
+class PayStatsTestCase(unittest.TestCase):
+    def testAddPayStats(self):
+        payStats = DiagnosePayStats()
+        payStats.id = 1
+        payStats.diagnoseId = 1
+        payStats.userId = 1
+        payStats.diagnoseId = 'SC000001'
+        payStats.finishDate = datetime.datetime.strptime('2014-10-19', '%Y-%m-%d')
+        payStats.money = 150
+        payStats.status = 0
+        DiagnosePayStats.save(payStats)
+
+        payStats = DiagnosePayStats()
+        payStats.id = 2
+        payStats.diagnoseId = 1
+        payStats.userId = 1
+        payStats.diagnoseId = 'SC000002'
+        payStats.finishDate = datetime.datetime.strptime('2014-11-07', '%Y-%m-%d')
+        payStats.money = 150
+        payStats.status = 0
+        DiagnosePayStats.save(payStats)
+
+        payStats = DiagnosePayStats()
+        payStats.id = 3
+        payStats.diagnoseId = 1
+        payStats.userId = 1
+        payStats.diagnoseId = 'SC000002'
+        payStats.finishDate = datetime.datetime.strptime('2014-10-19', '%Y-%m-%d')
+        payStats.money = 150
+        payStats.status = 2
+        DiagnosePayStats.save(payStats)
+
+        payStats = DiagnosePayStats()
+        payStats.id = 4
+        payStats.diagnoseId = 1
+        payStats.userId = 1
+        payStats.diagnoseId = 'SC000002'
+        payStats.finishDate = datetime.datetime.strptime('2014-10-19', '%Y-%m-%d')
+        payStats.money = 150
+        payStats.status = 3
+        DiagnosePayStats.save(payStats)
+
+        payStats = DiagnosePayStats()
+        payStats.id = 5
+        payStats.diagnoseId = 1
+        payStats.userId = 1
+        payStats.diagnoseId = 'SC000002'
+        payStats.finishDate = datetime.datetime.strptime('2014-10-19', '%Y-%m-%d')
+        payStats.money = 151
+        payStats.status = 2
+        DiagnosePayStats.save(payStats)
+
+class PayStatsGetTestCase(unittest.TestCase):
+    def testGetPayStats(self):
+        rs = DiagnosePayStats.getDetailPayStats(1, 0)
+        for row in rs:
+            print 'usable'
+            print row.id, row.finishDate
+            print 'finish usable'
+
+        rs = DiagnosePayStats.getDetailPayStats(1, 3)
+        for row in rs:
+            print 'payable'
+            print row.id, row.finishDate
+            print 'finish payable'
+
+        rs = DiagnosePayStats.getDetailPayStats(1, 2)
+        for row in rs:
+            print 'paid'
+            print row.id, row.finishDate
+            print 'paid'
+
+    def testGetSummary(self):
+        summary = DiagnosePayStats.getSummaryPayStats(1)
+        print summary[0], summary[1], summary[2], summary[3]
+
+    def testUpdateStats(self):
+        DiagnosePayStats.updatePaidStatsStatus(1, 0, 2)
 
 
 

@@ -197,7 +197,20 @@ class MobileMessageConstant(object):
     UrlPrefix="http://www.ezhenduan.com/pay/"
     KefuPhone=40088888888
 
+class DiagnosePayStatsConstant(object):
+    Ongoing=0#待支付
+    Del=1#已删除
+    Paid=2#已支付
+    Payable=3#可支付
+    All=4#所有的支付信息
+    Paying=5#支付中
 
+RollbackPeriod=7
+
+class DiagnosePayStatsLogConstant(object):
+    Del=1#已删除
+    ApplyPay=0#申请支付
+    FinishPay=2#支付完成
 
 
 
