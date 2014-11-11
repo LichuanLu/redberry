@@ -140,12 +140,12 @@ class UserFavoritesType(object):
 DefaultSystemAdminUserId=1
 
 class RoleId(object):
-    Admin=1
+    Admin=1   #fenzhen
     Doctor=2
     Patient=3
-    HospitalUser=4 #fenzhen
-    HospitalUserReal=5
-    Kefu=6
+    HospitalUser=4    #医院用户
+    HospitalUserReal=5  #废弃不用
+    Kefu=6             #客服
 class DiagnoseLogAction(object):
     NewDiagnoseAction='提出诊断申请'
     SendMessageToUser='为用户发送注册短信'
