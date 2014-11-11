@@ -47,39 +47,48 @@ class DiagnosePayStats(Base):
                 return session.query(DiagnosePayStats).filter(user == DiagnosePayStats.userId,
                                                               DiagnosePayStats.status==constant.DiagnosePayStatsConstant.Ongoing,
                                                               datetime.today()+timedelta(days=-constant.RollbackPeriod) >= DiagnosePayStats.finishDate) \
-                    .order_by(DiagnosePayStats.finishDate.desc()).offset(pageIndex).limit(pageSize)
+                    .order_by(DiagnosePayStats.finishDate.desc()).offset(pageIndex).limit(pageSize).all()
             if payStats == constant.DiagnosePayStatsConstant.Payable:
                 return session.query(DiagnosePayStats).filter(user == DiagnosePayStats.userId,
                                                               DiagnosePayStats.status==constant.DiagnosePayStatsConstant.Ongoing,
                                                               DiagnosePayStats.finishDate>datetime.today()+timedelta(days=-constant.RollbackPeriod)) \
-                    .order_by(DiagnosePayStats.finishDate.desc()).offset(pageIndex).limit(pageSize)
+                    .order_by(DiagnosePayStats.finishDate.desc()).offset(pageIndex).limit(pageSize).all()
             if payStats == constant.DiagnosePayStatsConstant.Paid:
                 return  session.query(DiagnosePayStats).filter(user == DiagnosePayStats.userId,
                                                                DiagnosePayStats.status == constant.DiagnosePayStatsConstant.Paid) \
-                    .order_by(DiagnosePayStats.finishDate.desc()).offset(pageIndex).limit(pageSize)
+                    .order_by(DiagnosePayStats.finishDate.desc()).offset(pageIndex).limit(pageSize).all()
             if payStats == constant.DiagnosePayStatsConstant.All:
                 return  session.query(DiagnosePayStats).filter(user == DiagnosePayStats.userId) \
-                    .order_by(DiagnosePayStats.finishDate.desc()).offset(pageIndex).limit(pageSize)
+                    .order_by(DiagnosePayStats.finishDate.desc()).offset(pageIndex).limit(pageSize).all()
 
     @classmethod
     def getOngoingSummary(cls, user):
-        return session.query(sa.func.sum(DiagnosePayStats.money)).filter(DiagnosePayStats.userId==user,
+        result = session.query(sa.func.sum(DiagnosePayStats.money)).filter(DiagnosePayStats.userId==user,
                                                                          DiagnosePayStats.status==constant.DiagnosePayStatsConstant.Ongoing,
                                                                          datetime.today()+timedelta(days=-constant.RollbackPeriod) >= DiagnosePayStats.finishDate) \
             .group_by(DiagnosePayStats.userId).all()
+        if result and len(result)>0:
+            return result[0][0]
+        return 0
 
     @classmethod
     def getPayableSummary(cls, user):
-        return session.query(sa.func.sum(DiagnosePayStats.money)).filter(DiagnosePayStats.userId==user,
+        result = session.query(sa.func.sum(DiagnosePayStats.money)).filter(DiagnosePayStats.userId==user,
                                                                          DiagnosePayStats.status==constant.DiagnosePayStatsConstant.Ongoing,
                                                                          DiagnosePayStats.finishDate>datetime.today()+timedelta(days=-constant.RollbackPeriod)) \
             .group_by(DiagnosePayStats.userId).all()
+        if result and len(result)>0:
+            return result[0][0]
+        return 0
 
     @classmethod
     def getPaidSummary(cls, user):
-        return session.query(sa.func.sum(DiagnosePayStats.money)).filter(user == DiagnosePayStats.userId,
+        result = session.query(sa.func.sum(DiagnosePayStats.money)).filter(user == DiagnosePayStats.userId,
                                                                          DiagnosePayStats.status == constant.DiagnosePayStatsConstant.Paid) \
             .group_by(DiagnosePayStats.userId).all()
+        if result and len(result)>0:
+           return result[0][0]
+        return 0
 
     @classmethod
     def getLastMonthRevenue(cls, user):
@@ -96,7 +105,9 @@ class DiagnosePayStats(Base):
                                                                                       DiagnosePayStats.status==constant.DiagnosePayStatsConstant.Paid,
                                                                                       DiagnosePayStats.finishDate >= lastMonthStartDate) \
             .group_by(DiagnosePayStats.userId).all()
-        return lastMonthRevenue
+        if lastMonthRevenue and len(lastMonthRevenue)>0:
+            return lastMonthRevenue[0][0]
+        return 0
 
     @classmethod
     def getSummaryPayStats(cls, user):
@@ -111,17 +122,26 @@ class DiagnosePayStats(Base):
         if user is None or prevStatus is None or status is None:
             return
         if prevStatus == constant.DiagnosePayStatsConstant.Ongoing:
-            result = session.query(DiagnosePayStats,sa.func.sum(DiagnosePayStats.money).label('cash')).filter(user == DiagnosePayStats.userId,
+            total = session.query(sa.func.sum(DiagnosePayStats.money)).filter(user == DiagnosePayStats.userId,
+                                                           prevStatus == DiagnosePayStats.status,
+                                                           datetime.today()+timedelta(days=-constant.RollbackPeriod)>DiagnosePayStats.finishDate)\
+            .group_by(DiagnosePayStats.userId).all()
+            session.query(DiagnosePayStats).filter(user == DiagnosePayStats.userId,
                                                                  prevStatus == DiagnosePayStats.status,
                                                                  datetime.today()+timedelta(days=-constant.RollbackPeriod)>DiagnosePayStats.finishDate)\
             .update(dict(status=status))
         else:
-            result = session.query(DiagnosePayStats,sa.func.sum(DiagnosePayStats.money).label('cash')).filter(user == DiagnosePayStats.userId,
+            session.query(DiagnosePayStats).filter(user == DiagnosePayStats.userId,
                                                                   prevStatus == DiagnosePayStats.status) \
             .update(dict(status=status))
+            total = session.query(DiagnosePayStats).filter(user == DiagnosePayStats.userId,
+                                                           prevStatus == DiagnosePayStats.status)\
+            .group_by(DiagnosePayStats.userId).all()
         session.commit()
         session.flush()
-        return result.cash
+        if total and total > 0:
+            return total[0][0]
+        return 0
 
     @classmethod
     def save(cls,payStats):
@@ -169,9 +189,9 @@ class DiagnosePayStatsLog(Base):
 
     @classmethod
     def getLogList(cls,user):
-        return session.query(DiagnosePayStatsLog).filter(user == DiagnosePayStatsLog.user,
+        return session.query(DiagnosePayStatsLog).filter(user == DiagnosePayStatsLog.userId,
                                                          constant.DiagnosePayStatsLogConstant.FinishPay == DiagnosePayStatsLog.action)\
-            .order_by(DiagnosePayStatsLog.date.desc())
+            .order_by(DiagnosePayStatsLog.date.desc()).all()
 
 class DiagnosePayStatsLogRel(Base):
     __tablename__ = 'diagnose_pay_stats_relation'
