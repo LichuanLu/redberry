@@ -70,7 +70,7 @@ class Diagnose(Base):
     status = sa.Column(sa.INTEGER)      # 草稿：9， 成稿 1
     serveAdmin=sa.Column(sa.INTEGER) #产生aplpaly的管理员
     isConfirmOrder=sa.Column(sa.SmallInteger)#是否已经产生了阿里的订单
-    alipayUrl = sa.Column(sa.String(256))
+    alipayUrl = sa.Column(sa.String(1024))
     alipayHashCode= sa.Column(sa.String(128)) #used for url redirect to ap
 
     def __init__(self,createdate=date.today()):
@@ -332,7 +332,10 @@ class Diagnose(Base):
         if alipayHashcode:
             return session.query(Diagnose.alipayUrl).filter(Diagnose.alipayHashCode==alipayHashcode).first()
 
-
+    @classmethod
+    def get_patientID_by_diagnoseID(cls,diagnoseID):
+        if diagnoseID:
+            return session.query(Diagnose.patientId).filter(Diagnose.id == diagnoseID)
 
 
 

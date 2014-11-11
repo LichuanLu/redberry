@@ -66,6 +66,11 @@ class Patient(Base):
             return session.query(Patient).filter(Patient.id == id, Patient.status.in_([ModelStatus.Draft,PatientStatus.diagnose])).first()
 
 
+    @classmethod
+    def get_identityPhone_by_patientID(cls, patientID):
+        if patientID:
+            return session.query(Patient.identityPhone).filter(Patient.id == patientID).first()
+
 '''
     def __repr__(self):
         return '<Post %s>' % (self.title)
