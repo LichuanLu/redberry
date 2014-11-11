@@ -14,9 +14,11 @@ from DoctorSpring.models import Diagnose
 
 from flask import abort, render_template, flash
 
+from PyPDF2 import PdfFileWriter, PdfFileReader
+import random
+import string
 
-
-def save_pdf(pdf_data,file,diagnoseId,fileName):
+def save_pdf(pdf_data,file,diagnoseId,fileName,identityPhone):
     default.DEFAULT_FONT["helvetica"]="msyh"
     fontFile = os.path.join( constant.DirConstant.ROOT_DIR+ '/DoctorSpring/static/font', 'msyh.ttf')
     pdfmetrics.registerFont(TTFont('msyh',fontFile))
@@ -24,12 +26,32 @@ def save_pdf(pdf_data,file,diagnoseId,fileName):
     pdf = pisa.pisaDocument(StringIO(
         pdf_data.encode("UTF-8")), file,encoding='utf-8')
     file.close()
+
+    output = PdfFileWriter()
+
+    with open(fileName, "rb") as f1:
+        input1 = PdfFileReader(f1)
+
+        for i in range(input1.getNumPages()):
+            output.addPage(input1.getPage(i))
+
+        #print(identityPhone)
+        password = str(int(identityPhone))
+        owner_pwd = ''.join(random.choice(string.letters + string.digits) for _ in range(64))
+        #print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" + owner_pwd)
+        output.encrypt(password, owner_pwd)
+
+        output.write(open("temp.pdf", "wb"))
+
+    os.remove(fileName)
+    os.rename("temp.pdf", fileName)
+
     fileUrl=upload_pdf(fileName,diagnoseId)
     return fileUrl
 def upload_pdf(fileName,diagnoseId):
       fileUrl=oss_util.uploadFile(diagnoseId,fileName)
       return fileUrl
-def generatorPdf(diagnoseId):
+def generatorPdf(diagnoseId, identityPhone):
     diagnose=Diagnose.getDiagnoseById(diagnoseId)
     report=None
     if hasattr(diagnose,'report'):
@@ -63,7 +85,7 @@ def generatorPdf(diagnoseId):
             fileName=constant.DirConstant.DIAGNOSE_PDF_DIR+'test.pdf'
             result = open(fileName, 'wb') # Changed from file to filename
 
-            url = save_pdf(html,result,diagnoseId,fileName)
+            url = save_pdf(html,result,diagnoseId,fileName, identityPhone)
             result.close()
             # return render_template("testpdf.html",getAvatar=getAvatar)
             return url

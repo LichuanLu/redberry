@@ -19,7 +19,7 @@ class Consult(Base):
     diagnoseId =sa.Column(sa.Integer)
     doctorId=sa.Column(sa.Integer )
     title=sa.Column(sa.String(256))
-    content=sa.Column(sa.String(51200))
+    content=sa.Column(sa.UnicodeText(51200))
     createTime=sa.Column(sa.DateTime)
     updateTime=sa.Column(sa.DateTime)
     type= sa.Column(sa.Integer)#type:1doctor为发起者，type=0，user为发起者
@@ -132,7 +132,7 @@ class Comment(Base):
     observer=sa.Column(sa.Integer)
     receiver=sa.Column(sa.Integer )
     title=sa.Column(sa.String(256))
-    content=sa.Column(sa.String(51200))
+    content=sa.Column(sa.UnicodeText(51200))
     createTime=sa.Column(sa.DateTime)
     type=sa.Column(sa.Integer)
     status=sa.Column(sa.Integer)
