@@ -137,12 +137,19 @@ def updateReport():
 
     form =  ReportForm(request.form)
 
+    patient_id = Diagnose.get_patientID_by_diagnoseID(form.diagnoseId)
+    identity_Phone = Patient.get_identityPhone_by_patientID(patient_id)
+    #identityPhone = Patient.get_identityPhone_by_patientID(patient_id)[0].decode(encoding='UTF-8')
+
+    identityPhone = identity_Phone[0]
+    #print(identityPhone)
+
     if form.reportId:
         #session['remember_me'] = form.remember_me.data
         # login and validate the user...
         if form.status and form.status==constant.ReportStatus.Commited:
 
-            fileUrl=pdf_utils.generatorPdf(form.diagnoseId)#需要先生存文檔上傳到服務器，獲取url
+            fileUrl=pdf_utils.generatorPdf(form.diagnoseId, identityPhone)#需要先生存文檔上傳到服務器，獲取url
             report=Report.update(form.reportId,constant.ReportType.Doctor,form.status,fileUrl,form.techDesc,form.imageDesc,form.diagnoseDesc)
             Diagnose.changeDiagnoseStatus(form.diagnoseId,constant.DiagnoseStatus.Diagnosed)
             #需要給用戶發信和記錄操作日誌
