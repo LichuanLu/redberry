@@ -25,7 +25,7 @@ def json_encode_decimal(obj):
         return str(obj)
     raise TypeError(repr(obj) + " is not JSON serializable")
 
-@diagnose_pay_stats_view.route('/stats/applyCash', methods=['GET'])
+@diagnose_pay_stats_view.route('/stats/applyCash', methods=['POST'])
 def applyCash(user):
     user = session['userId']
     if user is None:
