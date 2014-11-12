@@ -38,6 +38,7 @@ def register_blueprints(app):
     from views import user_view
     from views import front
     from views import mc,uc,diagnoseView,dfView
+    from views import diagnose_pay_stats_view
     #from views import admin
     app.register_blueprint(user_view)
     app.register_blueprint(front)
@@ -45,5 +46,5 @@ def register_blueprints(app):
     app.register_blueprint(uc)
     app.register_blueprint(diagnoseView)
     app.register_blueprint(dfView)
-
+    app.register_blueprint(diagnose_pay_stats_view)
 register_blueprints(app)
