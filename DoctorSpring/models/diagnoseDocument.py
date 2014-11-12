@@ -75,7 +75,7 @@ class Diagnose(Base):
 
     def __init__(self,createdate=date.today()):
         self.createDate = createdate
-
+        # self.ossUploaded = ossUploaded
 
     @classmethod
     def save(cls, diagnose):
@@ -237,12 +237,20 @@ class Diagnose(Base):
         if uploadUserId is None :
             return
         if patientName is None or patientName == u'':
+            # query=session.query(Diagnose)\
+            #     .filter(Diagnose.uploadUserId==uploadUserId,Diagnose.ossUploaded == constant.DiagnoseUploaed.NoUploaded,Diagnose.status.in_((DiagnoseStatus.NeedPay,DiagnoseStatus.NeedUpdate))).offset(pagger.getOffset()).limit(pagger.getLimitCount())
+            # query=query.union_all(session.query(Diagnose) \
+            #     .filter(Diagnose.uploadUserId==uploadUserId,Diagnose.ossUploaded == None,Diagnose.status.in_((DiagnoseStatus.NeedPay,DiagnoseStatus.NeedUpdate))).offset(pagger.getOffset()).limit(pagger.getLimitCount()))
             query=session.query(Diagnose)\
-                .filter(Diagnose.uploadUserId==uploadUserId,Diagnose.status.in_((DiagnoseStatus.Draft,DiagnoseStatus.NeedUpdate))).offset(pagger.getOffset()).limit(pagger.getLimitCount())
-        else:
-            query=session.query(Diagnose).select_from(join(Patient,Diagnose,Patient.id==Diagnose.patientId)) \
-                .filter(Patient.realname==patientName,Diagnose.status.in_((DiagnoseStatus.Draft,DiagnoseStatus.NeedUpdate)),Diagnose.uploadUserId==uploadUserId).offset(pagger.getOffset()).limit(pagger.getLimitCount())
+                .filter(Diagnose.uploadUserId==uploadUserId,Diagnose.status.in_((DiagnoseStatus.HospitalUserDiagnoseNeedCommit,DiagnoseStatus.NeedUpdate))).offset(pagger.getOffset()).limit(pagger.getLimitCount())
 
+        else:
+        #     query=session.query(Diagnose).select_from(join(Patient,Diagnose,Patient.id==Diagnose.patientId)) \
+        #         .filter(Patient.realname==patientName,Diagnose.ossUploaded == constant.DiagnoseUploaed.NoUploaded,Diagnose.status.in_((DiagnoseStatus.NeedPay,DiagnoseStatus.NeedUpdate)),Diagnose.uploadUserId==uploadUserId).offset(pagger.getOffset()).limit(pagger.getLimitCount())
+        #     query=query.union_all(session.query(Diagnose).select_from(join(Patient,Diagnose,Patient.id==Diagnose.patientId)) \
+        #         .filter(Patient.realname==patientName,Diagnose.ossUploaded == None,Diagnose.status.in_((DiagnoseStatus.NeedPay,DiagnoseStatus.NeedUpdate)),Diagnose.uploadUserId==uploadUserId).offset(pagger.getOffset()).limit(pagger.getLimitCount()))
+             query=session.query(Diagnose).select_from(join(Patient,Diagnose,Patient.id==Diagnose.patientId)) \
+                 .filter(Patient.realname==patientName,Diagnose.status.in_((DiagnoseStatus.HospitalUserDiagnoseNeedCommit,DiagnoseStatus.NeedUpdate)),Diagnose.uploadUserId==uploadUserId).offset(pagger.getOffset()).limit(pagger.getLimitCount())
         return query.all()
 
     @classmethod
@@ -561,15 +569,22 @@ class File(Base):
 
             return query.count()
 
+    #type != NONE 使用新方法，返回更多数据，默认返回一个FILE URL
     @classmethod
-    def getDicomFileUrl(cls,pathologyId):
+    def getDicomFileUrl(cls,pathologyId,type=None):
         if pathologyId:
-            return session.query(File.url).filter(File.pathologyId==pathologyId,File.type==constant.FileType.Dicom,File.status==ModelStatus.Normal).first()
+            if type:
+                return session.query(File.url,File.name,File.size,File.id).filter(File.pathologyId==pathologyId,File.type==constant.FileType.Dicom,File.status==ModelStatus.Normal).first()
+            else:
+                return session.query(File.url).filter(File.pathologyId==pathologyId,File.type==constant.FileType.Dicom,File.status==ModelStatus.Normal).first()
 
     @classmethod
-    def getFilesUrl(cls,pathologyId):
+    def getFilesUrl(cls,pathologyId,type=None):
         if pathologyId:
-            return session.query(File.url).filter(File.pathologyId==pathologyId,File.type==constant.FileType.FileAboutDiagnose,File.status==ModelStatus.Normal).all()
+            if type:
+                return session.query(File.url,File.name,File.size,File.id).filter(File.pathologyId==pathologyId,File.type==constant.FileType.FileAboutDiagnose,File.status==ModelStatus.Normal).all()
+            else:
+                return session.query(File.url).filter(File.pathologyId==pathologyId,File.type==constant.FileType.FileAboutDiagnose,File.status==ModelStatus.Normal).all()
 
 
     @classmethod
@@ -579,6 +594,17 @@ class File(Base):
             for file in files:
                 if not unicode(file.id) in fileIds:
                         file.status = ModelStatus.Del
+                        File.save(file)
+
+    @classmethod
+    def cleanAllDirtyFile(cls, fileIds, pathologyId):
+        if fileIds is not None and len(fileIds) > 0 and pathologyId:
+            files = File.getFilebypathologyId(pathologyId)
+            for file in files:
+                if not unicode(file.id) in fileIds:
+                    file.status = ModelStatus.Del
+                    File.save(file)
+
     @classmethod
     def deleteFileByPathologyId(cls,pathologyId,type=constant.FileType.Dicom):
         if pathologyId is None or pathologyId<1:

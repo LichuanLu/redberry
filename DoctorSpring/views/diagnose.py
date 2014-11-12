@@ -483,10 +483,11 @@ def changeDiagnoseStatus(diagnoseId):
 @diagnoseView.route('/diagnose/<int:diagnoseId>/toNeedPay', methods = ['GET', 'POST'])
 def changeDiagnoseToNeedPay(diagnoseId):
     try:
-
         loginUserId=session.get('userId')
         if loginUserId is None:
             return
+
+        fileIds = request.form.getlist('fileIds')
 
         loginUserId=string.atoi(loginUserId)
         diagnose=Diagnose.getDiagnoseById(diagnoseId)
@@ -494,12 +495,30 @@ def changeDiagnoseToNeedPay(diagnoseId):
             return
         userID=diagnose.patient.userID
         if userID==loginUserId or diagnose.uploadUserId==loginUserId:
-            diagnose=Diagnose()
-            diagnose.id=diagnoseId
-            diagnose.status= constant.DiagnoseStatus.NeedPay
-            Diagnose.update(diagnose)
-            from DoctorSpring.views.front import sendAllMessage
-            sendAllMessage(userID,diagnose)
+            # diagnose=Diagnose()
+            # diagnose.id=diagnoseId
+            #update by lichuan
+            # diagnose.status= constant.DiagnoseStatus.NeedPay
+            # Diagnose.update(diagnose)
+            from DoctorSpring.views.front import sendAllMessage,checkFilesExisting
+            from DoctorSpring.models.diagnoseDocument import File
+            if(checkFilesExisting(diagnose)):
+
+
+
+                newDiagnose= Diagnose()
+                newDiagnose.id=diagnoseId
+                newDiagnose.status= constant.DiagnoseStatus.NeedPay
+                Diagnose.update(newDiagnose)
+                #清除以前的无用文件
+                pathologyId = diagnose.pathologyId
+                File.cleanAllDirtyFile(fileIds, pathologyId)
+                sendAllMessage(userID,diagnose)
+            else:
+                return json.dumps(rs.FAILURE.__dict__,"需要上传DICOM文件和诊断文件")
+
+            #end update
+
     except Exception,e:
         LOG.error(e.message)
         return json.dumps(rs.FAILURE.__dict__,ensure_ascii=False)

@@ -261,7 +261,8 @@ def getDiagnoseListByHospitalUser():
      pageSize=request.args.get('pageSize')
      pager=Pagger(pageNo,pageSize)
      diagnoses=Diagnose.getNeedDealDiagnoseByHospitalUser(db_session,userId,None,pager)
-     diagnosesDict=dataChangeService.userCenterDiagnoses(diagnoses)
+     #type fullFile代表查询文件返回文件全部信息，如果没有只返回FILE URL
+     diagnosesDict=dataChangeService.userCenterDiagnoses(diagnoses,'fullFile')
 
 
      resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,diagnosesDict)

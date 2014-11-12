@@ -3,7 +3,8 @@ __author__ = 'chengc017'
 from DoctorSpring.util import constant
 from DoctorSpring.models import File ,Diagnose,User,DiagnoseLog,Comment,Doctor,Hospital
 
-def userCenterDiagnoses(diagnoses):
+#type fullFile代表查询文件返回文件全部信息，如果没有只返回FILE URL
+def userCenterDiagnoses(diagnoses,type=None):
     if diagnoses is None or len(diagnoses)<1:
         return
     result=[]
@@ -33,18 +34,22 @@ def userCenterDiagnoses(diagnoses):
         dicomUrl=None
         otherUrls=None
         if diagnose.pathologyId:
-            dicomUrl=File.getDicomFileUrl(diagnose.pathologyId)
+            dicomUrl=File.getDicomFileUrl(diagnose.pathologyId,type)
             if dicomUrl:
                 diagDict['hasDicom'] = True
             else:
                 diagDict['hasDicom'] = False
-            otherUrls=File.getFilesUrl(diagnose.pathologyId)
+            otherUrls=File.getFilesUrl(diagnose.pathologyId,type)
             if otherUrls:
                 diagDict['hasDoc']=True
             else:
                 diagDict['hasDoc']=False
-        diagDict['dicomUrl'] = dicomUrl
-        diagDict['docUrl']=otherUrls
+        if type:
+            diagDict['dicomUrl'] = parseFileUrl(dicomUrl)
+            diagDict['docUrl']=parseFilesUrl(otherUrls)
+        else:
+            diagDict['dicomUrl'] = dicomUrl
+            diagDict['docUrl']= otherUrls
 
         if hasattr(diagnose,'report') and diagnose.report and diagnose.report.fileUrl:
             diagDict['reportUrl']= diagnose.report.fileUrl
@@ -70,6 +75,25 @@ def userCenterDiagnoses(diagnoses):
         result.append(diagDict)
 
     return result
+
+def parseFileUrl(fileUrlContainer):
+    result = {}
+    if fileUrlContainer:
+        result['url'] = fileUrlContainer[0]
+        result['name'] = fileUrlContainer[1]
+        result['size'] = fileUrlContainer[2]
+        result['id'] = fileUrlContainer[3]
+    return result
+
+def parseFilesUrl(fileUrlContainer):
+    if fileUrlContainer and len(fileUrlContainer) > 0:
+       resultArr = []
+       for item in fileUrlContainer:
+            resultArr.append(parseFileUrl(item))
+       return resultArr
+    return None
+
+
 def getDiagnoseListByKefu(diagnoses):
     if diagnoses is None or len(diagnoses)<1:
         return

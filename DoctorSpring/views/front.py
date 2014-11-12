@@ -275,6 +275,10 @@ def applyDiagnoseForm(formid):
                     if form.type=='1' and not checkFilesExisting(new_diagnose):
                         new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
                         DiagnoseLog.save(db_session, new_diagnoselog)
+                        #update by lichuan , save diagnose and change to needPay
+                        new_diagnose.status = DiagnoseStatus.HospitalUserDiagnoseNeedCommit
+                        Diagnose.save(new_diagnose)
+                        #end update
                     else:
                         #产生alipay，发送短消息
                         userId= session.get('userId')
@@ -508,6 +512,8 @@ def disableFile():
             pathologyId=diagnose.pathologyId
             result=File.deleteFileByPathologyId(pathologyId,type)
             if result>0:
+                diagnose.ossUploaded = constant.DiagnoseUploaed.NoUploaded
+                Diagnose.save(diagnose)
                 return jsonify(rs.SUCCESS.__dict__, ensure_ascii=False)
         return jsonify(rs.FAILURE.__dict__, ensure_ascii=False)
 

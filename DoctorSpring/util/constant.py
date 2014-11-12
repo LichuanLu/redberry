@@ -32,6 +32,7 @@ class DiagnoseStatus(object):
     Diagnosed=6 #诊断完成
     NeedUpdate=7 #需要更新信息
     UnableDiagnose=8#无法诊断
+    HospitalUserDiagnoseNeedCommit = 10 #医院用户提交，但是还没有最终确认提交
     @staticmethod
     def getStatusName(status):
         if status==DiagnoseStatus.Draft:
@@ -50,6 +51,8 @@ class DiagnoseStatus(object):
             return '需要更新信息'
         if status==DiagnoseStatus.UnableDiagnose:
             return '无法诊断'
+        if status==DiagnoseStatus.HospitalUserDiagnoseNeedCommit:
+            return '待提交'
 
 class DiagnoseUploaed(object):
     NoUploaded=0
