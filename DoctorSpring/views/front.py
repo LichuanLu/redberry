@@ -76,7 +76,9 @@ def applyDiagnose():
     locationsDict = object2dict.objects2dicts(locations)
     data['locations'] = locationsDict
 
-
+    #hospital user
+    if 'type' in request.args.keys():
+        data['type'] = int(request.args.get('type'))
     if 'edit' in request.args.keys() and 'diagnoseid' in request.args.keys():
         new_diagnose = Diagnose.getDiagnoseById(request.args['diagnoseid'])
         data['edit'] = 1

@@ -26,7 +26,7 @@
 <h4 class="main-content-title">申请会诊</h4>
 {% endif %}
 
-<div class="submit-patient-info-wrapper">
+<div class="submit-patient-info-wrapper" data-userId="{{session['userId']}}">
 	<div class="row">
 		<div class="col-md-9" role="main">
 			<div class="panel panel-default" data-form-id='1' id="first-panel">
@@ -132,35 +132,35 @@
 							</div>
 						</div>
 
-						<div class="form-group">
-							<label for="birthdateinput">
-								出生日期：
-								<span class="required-text">（必填）</span>
-							</label>
-							<div class="input-wrapper">
+                        <div class="form-group">
+                            <label for="birthdateinput">
+                                出生日期：
+                                <span class="required-text">（必填）</span>
+                            </label>
+                            <div class="input-wrapper">
+
+                                <!-- <div class="input-group">
+                                    <span class="input-group-btn">
+                                        <button class="btn" type="button">
+                                            <span class="fui-calendar"></span>
+                                        </button>
+                                    </span>
+                                    <input type="text" class="form-control" id="birthdateinput" name="birthdate">
+                                </div> -->
                                 <div class="input-group date">
-                                    <input type="text" class="form-control" id="birthdateinput" name="birthdate" value="{%if result.patient%}{{result.patient.birthDate}}{%endif%}">
-                                    <span class="input-group-addon"><i class="fui-calendar"></i></span>
+                                    <input type="text" class="form-control" id="birthdateinput" name="birthdate" value="{%if result.patient%}{{result.patient.birthDate}}{%endif%}"><span class="input-group-addon"><i class="fui-calendar"></i></span>
+                                </div>
+                                <div class="right-box">
+                                    <div class="line-area">
+                                        <div class="line"></div>
+                                        <div class="ball"></div>
+                                    </div>
+                                    <p class="side-description">日期格式：1980-01-01</p>
                                 </div>
 
-								<!--<div class="input-group">-->
-									<!--<span class="input-group-btn">-->
-										<!--<button class="btn" type="button">-->
-											<!--<span class="fui-calendar"></span>-->
-										<!--</button>-->
-									<!--</span>-->
-									<!--<input type="text" class="form-control" value="{%if result.patient%}{{result.patient.birthDate}}{%endif%}" id="birthdateinput" name="birthdate">-->
-                                <!--</div>-->
+                            </div>
 
-							</div>
-                                <!--<div class="right-box">-->
-                                    <!--<div class="line-area">-->
-                                        <!--<div class="line"></div>-->
-                                        <!--<div class="ball"></div>-->
-                                    <!--</div>-->
-                                    <!--<p class="side-description">日期格式：1980-01-01</p>-->
-                                <!--</div>-->
-						</div>
+                        </div>
 
 						<div class="form-group">
 							<label for="identityNumberInput">
@@ -313,7 +313,7 @@
 
                         </div>
 
-
+                        {% if result['type'] != 1 %}
                         <div class="form-group" id="dicomfileupload">
                             <label for="dicomfileinput">
                                 DICOM影像文件：
@@ -381,7 +381,7 @@
                             </div>
 
                         </div>
-					
+                        {%endif%}
 				    </form>
 				<div class="btn-wrapper">
                     <button id="submitBtn3" type="submit" nams="op" class="btn btn-info submit-btn ladda-button" data-style="expand-right">
@@ -401,32 +401,32 @@
 				<span>第四部分／总共四部分</span>
 			</div>
 			<div class="panel-body">
-                {% if result.edit != 1%}
-				<div id="patient-history-radio" class="patient-radio-wrapper">
-						<label class="radio">
-							<span class="icons">
-								<span class="first-icon fui-radio-unchecked"></span>
-								<span class="second-icon fui-radio-checked"></span>
-							</span>
-							<input type="radio" name="historyInfo" value="1" data-toggle="radio">从电子病历中选取</label>
+                <!--{% if result.edit != 1%}-->
+				<!--<div id="patient-history-radio" class="patient-radio-wrapper">-->
+						<!--<label class="radio">-->
+							<!--<span class="icons">-->
+								<!--<span class="first-icon fui-radio-unchecked"></span>-->
+								<!--<span class="second-icon fui-radio-checked"></span>-->
+							<!--</span>-->
+							<!--<input type="radio" name="historyInfo" value="1" data-toggle="radio">从电子病历中选取</label>-->
 
-						<label class="radio">
-							<span class="icons">
-								<span class="first-icon fui-radio-unchecked"></span>
-								<span class="second-icon fui-radio-checked"></span>
-							</span>
-							<input type="radio" name="historyInfo" value="2" data-toggle="radio" checked="true">新额外信息</label>
-				</div>
-                {% endif %}
-				<form id="history-already-exists" class="full-width-dropdown" style="display:none;">
-                        <div id="history-already-exists-select-region">
+						<!--<label class="radio">-->
+							<!--<span class="icons">-->
+								<!--<span class="first-icon fui-radio-unchecked"></span>-->
+								<!--<span class="second-icon fui-radio-checked"></span>-->
+							<!--</span>-->
+							<!--<input type="radio" name="historyInfo" value="2" data-toggle="radio" checked="true">新额外信息</label>-->
+				<!--</div>-->
+                <!--{% endif %}-->
+				<!--<form id="history-already-exists" class="full-width-dropdown" style="display:none;">-->
+                        <!--<div id="history-already-exists-select-region">-->
 
-                            <select id="history-already-exists-select" name="pathologyId">
-                            </select>
-                        </div>
-						<div id="history-already-info-region">
-						</div>
-				</form>
+                            <!--<select id="history-already-exists-select" name="pathologyId">-->
+                            <!--</select>-->
+                        <!--</div>-->
+						<!--<div id="history-already-info-region">-->
+						<!--</div>-->
+				<!--</form>-->
 				<form role="form" class="form-inline" id="new-history-form">
 					<div class="form-group">
 						<label for="hospitalinput">
@@ -468,6 +468,7 @@
 						</div>
 
 					</div>
+                    {% if result['type'] != 1 %}
                     <div class="form-group" id="patient-medical-report-fileupload">
                         <label for="patient-medical-report-file">
                             诊断书：
@@ -531,7 +532,7 @@
                             </div>
                         </div>
                     </div>
-					
+                    {%endif%}
 				</form>
 				<p class="apply-warning-text">请详细检查您申请的请求并确保您已经提供了需要的信息</p>
 				<div class="btn-wrapper">
