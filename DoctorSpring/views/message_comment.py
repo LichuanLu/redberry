@@ -206,6 +206,8 @@ def addConsult():
                 userId=dignose.patient.userID
         if form.source_id is None or form.source_id == u'':
             form.source_id=-1
+        if form.userId is not None and form.userId != u'':
+            userId = form.userId
         consult=Consult(userId,form.doctorId,form.title,form.content,form.parent_id,form.source_id,form.type,form.diagnose_id)
         Consult.save(consult)
         if form.source_id:

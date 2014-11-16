@@ -273,24 +273,33 @@ def applyDiagnoseForm(formid):
 
                     new_patient = Patient.get_patient_by_id(new_diagnose.patientId)
                     new_patient.status = PatientStatus.diagnose
-                    #hospitalUser type=1
-                    if form.type=='1' and not checkFilesExisting(new_diagnose):
-                        new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
+                    #add for need update scenario
+                    if new_diagnose.status == constant.DiagnoseStatus.NeedUpdate:
+                        new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.DiagnoseNeedUpateRecommitAction)
                         DiagnoseLog.save(db_session, new_diagnoselog)
-                        #update by lichuan , save diagnose and change to needPay
-                        new_diagnose.status = DiagnoseStatus.HospitalUserDiagnoseNeedCommit
+                        new_diagnose.status = DiagnoseStatus.Triaging
                         Diagnose.save(new_diagnose)
-                        #end update
+                    #hospitalUser type=1
                     else:
-                        #产生alipay，发送短消息
-                        userId= session.get('userId')
+                        if form.type=='1' and not checkFilesExisting(new_diagnose):
+                            new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
+                            DiagnoseLog.save(db_session, new_diagnoselog)
+                            #update by lichuan , save diagnose and change to needPay
+                            new_diagnose.status = DiagnoseStatus.HospitalUserDiagnoseNeedCommit
+                            Diagnose.save(new_diagnose)
+                            #end update
+                        else:
+                            #产生alipay，发送短消息
+                            userId= session.get('userId')
 
 
-                        new_diagnose.ossUploaded=constant.DiagnoseUploaed.Uploaded
-                        new_diagnose.status = DiagnoseStatus.NeedPay
+                            new_diagnose.ossUploaded=constant.DiagnoseUploaed.Uploaded
+                            new_diagnose.status = DiagnoseStatus.NeedPay
 
-                        Diagnose.save(new_diagnose)
-                        sendAllMessage(userId,new_diagnose)
+                            Diagnose.save(new_diagnose)
+                            sendAllMessage(userId,new_diagnose)
+
+
 
 
                 else:

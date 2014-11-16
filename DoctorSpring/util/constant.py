@@ -157,6 +157,7 @@ class DiagnoseLogAction(object):
     TriageDiagnoseAction='正在进行诊断'
     UpateDiagnoseAction='正在进行诊断'
     DiagnoseNeedUpateAction='暂停分发诊断(需要更多就诊人信息)'
+    DiagnoseNeedUpateRecommitAction='重新提交诊断申请(已经修改相应信息)'
     DiagnoseFinished='完成诊断'
     CancleDiagnose='取消诊断'
 class AlipayLogAction(object):

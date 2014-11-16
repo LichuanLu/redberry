@@ -236,6 +236,7 @@ def getDiagnoseDetailInfoByPatient(session,diagnose):
     #diagDict['type']=diagnose.type
     if hasattr(diagnose,"doctor") and diagnose.doctor and diagnose.doctor.username:
         diagDict['doctorName']=diagnose.doctor.username
+        diagDict['doctorUserId']=diagnose.doctor.userId
     if diagnose.createDate:
         diagDict["applyTime"]=diagnose.createDate.strftime('%Y-%m-%d')
     if diagnose.status:
@@ -268,9 +269,9 @@ def getDiagnoseDetailInfoByPatient(session,diagnose):
             diagDict['hospitalHistory']=pathology.hospital.name
             diagDict['hospitalId']=pathology.hospitalId
 
-
-    if hasattr(diagnose,'report') and diagnose.report:
+    if hasattr(diagnose,'report') and diagnose.report and diagnose.report.fileUrl:
         diagDict['reportId']=diagnose.reportId
+        diagDict['reportUrl']= diagnose.report.fileUrl
         # diagDict['techDes']=diagnose.report.techDesc
         # diagDict['imageDes']=diagnose.report.imageDesc
         # diagDict['diagnoseResult']=diagnose.report.diagnoseDesc
