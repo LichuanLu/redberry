@@ -294,7 +294,7 @@ class Diagnose(Base):
         if status==-1:
             query=query.filter(Diagnose.status.notin_((DiagnoseStatus.Diagnosed,DiagnoseStatus.Del)))
 
-        elif status is None:
+        elif status is None or status == u'':
             query=query.filter(Diagnose.status!=DiagnoseStatus.Del)
         else:
             query=query.filter(Diagnose.status==DiagnoseStatus.Diagnosed)
