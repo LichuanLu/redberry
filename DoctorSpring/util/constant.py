@@ -8,7 +8,12 @@ class ModelStatus(object):
       Del=1
       Draft=9   #草稿
 
-
+class ConsultStatus(object):
+    Unread=0
+    Del=1
+    Read=2
+    PatientComments=3
+    DoctorComments=4
 
 class UserStatus(object):
     patent = 0  # 普通用户

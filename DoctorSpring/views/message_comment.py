@@ -214,6 +214,10 @@ def addConsult():
             sourceConsult=Consult.getById(form.source_id)
             if sourceConsult:
                 sourceConsult.count+=1
+                if (form.type == 0):
+                    sourceConsult.status = 3
+                else:
+                    sourceConsult.status = 4
                 Consult.update(consult)
 
 
@@ -239,7 +243,7 @@ def getConsultsByDoctor(doctorId):
 
 
         consutsDict=object2dict.objects2dicts(consuts)
-        dataChangeService.setConsultsResult(consutsDict)
+        dataChangeService.setConsultsResult(consutsDict, session["userId"])
 
         resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,consutsDict)
         resultDict=resultStatus.__dict__
@@ -257,18 +261,26 @@ def getConsultsByUser(userId):
     if userId:
         consuts=None
         if sourceId:
-            consuts=Consult.getConsultsByUserId(userId,string.atoi(sourceId))
+            consuts=Consult.getConsultsByUserId(userId,status,string.atoi(sourceId))
         else:
-            consuts=Consult.getConsultsByUserId(userId)
+            consuts=Consult.getConsultsByUserId(userId, status)
         consutsDict=object2dict.objects2dicts(consuts)
-        dataChangeService.setConsultsResult(consutsDict)
+        dataChangeService.setConsultsResult(consutsDict, session["userId"])
 
         resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,consutsDict)
         resultDict=resultStatus.__dict__
         return json.dumps(resultDict,ensure_ascii=False)
     return json.dumps(rs.PARAM_ERROR,ensure_ascii=False)
+
 @mc.route('/consut/<int:consultId>/read', methods = ['GET', 'POST'])
 def changeConsultRead(consultId):
+    consult = Consult.getConsultByConsultId(consultId)
+    if consult.type is 0:
+        if consult.userId == session["userId"]:
+            return
+    if consult.type is 1:
+        if consult.doctorId == session["userId"]:
+            return
     Consult.changeReadStatus(consultId)
     return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
 
