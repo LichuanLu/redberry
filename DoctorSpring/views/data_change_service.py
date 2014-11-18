@@ -605,7 +605,7 @@ def getAccountInfo(userDict):
 
         return userDict
     return None
-def setConsultsResult(consutsDict):
+def setConsultsResult(consutsDict, userId=0):
     if consutsDict is None:
         return
     for consutDict in consutsDict:
@@ -618,14 +618,33 @@ def setConsultsResult(consutsDict):
                         consutDict['doctorTitle']=doctor.title
                         if hasattr(doctor,'user') and doctor.user and doctor.user.imagePath:
                             consutDict['avartarUrl']= doctor.user.imagePath
+                    consutDict["statusText"] = getStatusText(consutDict.get("status"), consutDict.get("userId")==userId, 1)
+
         if type==0:
             if consutDict.get('userId'):
                 user=User.getById(consutDict.get('userId'))
                 if user:
                     consutDict['userName']=user.name
                     consutDict['avartarUrl']=user.imagePath
+                    consutDict["statusText"] = getStatusText(consutDict.get("status"), consutDict.get("userId")==userId, 0)
         consutDict['amount']=consutDict.get('count')
 
+def getStatusText(status, currentUser, type):
+    if status == constant.ConsultStatus.Unread:
+        return u"未读"
+    if status == constant.ConsultStatus.Read:
+        return u"已读"
+    if status == constant.ConsultStatus.PatientComments:
+        if currentUser and type==0:
+            return u"已读"
+        else:
+            return u"未读"
+    if status == constant.ConsultStatus.DoctorComments:
+        if currentUser and type==1:
+            return u"已读"
+        else:
+            return u"未读"
+    return u"已读"
 def getAllHospital(hospitals):
     if hospitals is None or len(hospitals)<1:
         return

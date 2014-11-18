@@ -4,7 +4,7 @@ import sqlalchemy as sa
 from datetime import datetime
 from DoctorSpring.util import constant
 from database import db_session as session
-from DoctorSpring.util.constant import ModelStatus,CommentType
+from DoctorSpring.util.constant import ModelStatus,CommentType,ConsultStatus
 
 from database import Base
 class Consult(Base):
@@ -65,34 +65,59 @@ class Consult(Base):
             return
         if sourceId:
             if status==0:
-                return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.source_id==sourceId,Consult.status==ModelStatus.Normal) \
+                return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.source_id==sourceId,
+                                                     Consult.status.in_((ConsultStatus.Unread, ConsultStatus.PatientComments))) \
                     .order_by(Consult.updateTime.desc()).all()
             if status==2:
-                return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.source_id==sourceId,Consult.status==2) \
+                return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.source_id==sourceId,
+                                                     Consult.status.in_((ConsultStatus.Read, ConsultStatus.DoctorComments))) \
                     .order_by(Consult.updateTime.desc()).all()
-            return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.source_id==sourceId,Consult.status!=ModelStatus.Del) \
+            return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.source_id==sourceId,Consult.status!=ConsultStatus.Del) \
                 .order_by(Consult.updateTime.desc()).all()
         else:
             if status==0:
-                return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.status==ModelStatus.Normal,Consult.source_id==-1). \
+                return session.query(Consult).filter(Consult.doctorId==doctorId,
+                                                     Consult.status.in_((ConsultStatus.Unread, ConsultStatus.PatientComments)),Consult.source_id==-1). \
                     order_by(Consult.updateTime.desc()).all()
             #已读
             if status==2:
-                return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.status==2,Consult.source_id==-1). \
+                return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.status.in_((ConsultStatus.Read, ConsultStatus.DoctorComments))
+                                                     ,Consult.source_id==-1). \
                     order_by(Consult.updateTime.desc()).all()
-            return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.status!=ModelStatus.Del,Consult.source_id==-1). \
+            return session.query(Consult).filter(Consult.doctorId==doctorId,Consult.status!=ConsultStatus.Del,Consult.source_id==-1). \
                 order_by(Consult.updateTime.desc()).all()
 
+    @classmethod
+    def getConsultByConsultId(cls,consultId):
+        if consultId is None:
+            return
+        return session.query(Consult).filter(Consult.id==consultId).first()
 
     @classmethod
-    def getConsultsByUserId(cls,userId,sourceId=None,status=-1):
+    def getConsultsByUserId(cls,userId,status=-1,sourceId=None):
         if userId is None:
             return
         if sourceId:
-            return session.query(Consult).filter(Consult.userId==userId,Consult.source_id==sourceId,Consult.status!=ModelStatus.Del)\
+            if status == 0:
+                return session.query(Consult).filter(Consult.userId==userId,Consult.source_id==sourceId,
+                                                     Consult.status.in_((ConsultStatus.Unread, ConsultStatus.DoctorComments)))\
+                    .order_by(Consult.updateTime.desc()).all()
+            if status == 2:
+                return session.query(Consult).filter(Consult.userId==userId,Consult.source_id==sourceId,
+                                                     Consult.status.in_((ConsultStatus.Read, ConsultStatus.PatientComments))) \
+                    .order_by(Consult.updateTime.desc()).all()
+            return session.query(Consult).filter(Consult.userId==userId,Consult.source_id==sourceId,Consult.status!=ConsultStatus.Del)\
                 .order_by(Consult.updateTime.desc()).all()
         else:
-            return session.query(Consult).filter(Consult.userId==userId,Consult.status!=ModelStatus.Del,Consult.source_id==-1)\
+            if status == 0:
+                return session.query(Consult).filter(Consult.userId==userId,Consult.source_id==-1,
+                                                     Consult.status.in_((ConsultStatus.Unread, ConsultStatus.DoctorComments))) \
+                    .order_by(Consult.updateTime.desc()).all()
+            if status == 2:
+                return session.query(Consult).filter(Consult.userId==userId,Consult.source_id==-1,
+                                                     Consult.status.in_((ConsultStatus.Read, ConsultStatus.PatientComments))) \
+                    .order_by(Consult.updateTime.desc()).all()
+            return session.query(Consult).filter(Consult.userId==userId,Consult.status!=ConsultStatus.Del,Consult.source_id==-1)\
                 .order_by(Consult.updateTime.desc()).all()
     @classmethod
     def getConsultsBySourceId(cls,sourceId):
@@ -117,6 +142,10 @@ class Consult(Base):
 
         if consult.count:
             consultNeedChange.count=consult.count
+
+        if consult.status:
+            consultNeedChange.status=consult.status
+
         session.commit()
         session.flush()
 
