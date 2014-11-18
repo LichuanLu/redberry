@@ -525,10 +525,10 @@ class ReportDiagnoseRelation(Base):
     id = sa.Column(sa.Integer, primary_key = True, autoincrement = True)
 
     reportId = sa.Column(sa.Integer, sa.ForeignKey('report.id'))
-    report = relationship("Report", backref=backref('report', order_by=id))
+    report = relationship("Report", backref=backref('reportDiagnoseRelation', order_by=id))
 
     diagnoseId = sa.Column(sa.Integer, sa.ForeignKey('diagnose.id'))
-    diagnose = relationship("Diagnose", backref=backref('diagnose', order_by=id))
+    diagnose = relationship("Diagnose", backref=backref('reportDiagnoseRelation', order_by=id))
 
     status=sa.Column(sa.Integer)
 
