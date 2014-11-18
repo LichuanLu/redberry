@@ -49,11 +49,16 @@ def homepage():
         resultData['comments']=diagnoseCommentsDict
     else:
         resultData['comments']=None
+
+    resultData['ishomepage']=True
     if session.has_key('userId'):
         userId=session['userId']
         messageCount=Message.getMessageCountByReceiver(userId)
         resultData['messageCount']=messageCount
-    return render_template("home.html", result=resultData)
+        if UserRole.checkRole(db_session,userId,constant.RoleId.Patient):
+            resultData['isPatient'] = True
+
+    return render_template("home.html", data=resultData)
 
 @front.route('/applyDiagnose', methods=['GET', 'POST'])
 def applyDiagnose():
@@ -699,7 +704,8 @@ def doctor_list():
     skills = Skill.getSkills()
     skillsDict = object2dict.objects2dicts(skills)
     result['skills'] = skillsDict
-    return render_template("doctorList.html", result=result)
+    result['isdoctorlist'] = True
+    return render_template("doctorList.html", data=result)
 
 
 @front.route('/patient/profile.json')
@@ -765,7 +771,9 @@ def userCenter(userId):
 
 @front.route('/help/center', methods=['GET', 'POST'])
 def helpCenterPage():
-    return render_template("helpcenter.html")
+    result = {}
+    result['ishelpcenter'] = True
+    return render_template("helpcenter.html",data=result)
 
 @front.route('/help/doc', methods=['GET', 'POST'])
 def helpDocPage():

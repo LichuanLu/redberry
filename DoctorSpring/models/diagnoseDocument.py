@@ -138,7 +138,10 @@ class Diagnose(Base):
                                                       Diagnose.createDate>startTime,Diagnose.createDate<endTime)\
                     .offset(pagger.getOffset()).limit(pagger.getLimitCount()).all()
             else:
-                return session.query(Diagnose).filter(Diagnose.doctorId==doctorId,Diagnose.status!=DiagnoseStatus.Del,
+
+
+
+                return session.query(Diagnose).filter(Diagnose.doctorId==doctorId,Diagnose.status.notin_((DiagnoseStatus.Del,DiagnoseStatus.Draft)),
                                                       Diagnose.createDate>startTime,Diagnose.createDate<endTime) \
                     .offset(pagger.getOffset()).limit(pagger.getLimitCount()).all()
     @classmethod
@@ -511,6 +514,39 @@ class Report(Base):
             session.flush()
             session.commit()
         return report
+
+
+class ReportDiagnoseRelation(Base):
+    __tablename__ = 'report_diagnose_relation'
+    __table_args__ = {
+        'mysql_charset': 'utf8',
+        'mysql_engine': 'MyISAM',
+        }
+    id = sa.Column(sa.Integer, primary_key = True, autoincrement = True)
+
+    reportId = sa.Column(sa.Integer, sa.ForeignKey('report.id'))
+    report = relationship("Report", backref=backref('report', order_by=id))
+
+    diagnoseId = sa.Column(sa.Integer, sa.ForeignKey('diagnose.id'))
+    diagnose = relationship("Report", backref=backref('diagnose', order_by=id))
+
+    status=sa.Column(sa.Integer)
+
+    def __init__(self,reportId=None,diagnoseId=None,status=ModelStatus.Normal):
+        self.reportId = reportId
+        self.diagnoseId = diagnoseId
+
+        if status:
+            self.status = status
+        else:
+            self.status = ModelStatus.Normal
+
+    @classmethod
+    def save(cls,reportDiagnoseRelation):
+        if reportDiagnoseRelation:
+            session.add(reportDiagnoseRelation)
+            session.commit()
+            session.flush()
 
 class File(Base):
     __tablename__ = 'file'

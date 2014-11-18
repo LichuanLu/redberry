@@ -47,15 +47,20 @@
             {% if session['logged_in'] %}
             <div class="button-wrapper login">
                 <div>您好 {{session['username']}}，欢迎来到易诊断！</div>
+                {% if data and data.isPatient %}
                 <a class="btn btn-info first-btn" type="button" href="/userCenter/{{session['userId']}}">进入个人中心</a>
                 <a class="btn btn-success" type="button" href="/applyDiagnose">马上进行诊断</a>
+                {% else %}
+                <a class="btn btn-info" type="button" href="/userCenter/{{session['userId']}}">进入个人中心</a>
+
+                {% endif %}
             </div>
             {% else %}
             <!--For unlogin user -->
             <div class="button-wrapper unlogin">
                 <a class="btn btn-info" type="button" href="/register/patient">用户注册入口</a>
                 <a class="btn btn-warning" type="button" href="/register/doctor">医生注册入口</a>
-                <div>已经有帐号，直接<a href="#" data-toggle="modal" data-target=".login-modal">登陆</a></div>
+                <div>已经有帐号，直接<a href="#" data-toggle="modal" data-target=".login-modal">登录</a></div>
             </div>
             {% endif %}
         </div>
@@ -69,25 +74,25 @@
     <div class="row rowmarginbottom">
 
         <div class="col-md-4 doctor-preview">
-            {% if result.doctor %}
+            {% if data.doctor %}
             <div class="image-preview">
-                <img id="preview" src="{{result.doctor.avatarUrl}}" />
+                <img id="preview" src="{{data.doctor.avatarUrl}}" />
             </div>
             <div class="doctor-preview-des">
 
                 <h6>
-                    {{result.doctor.doctorname}}
-                    <span>{{result.doctor.doctortitle}}</span>
+                    {{data.doctor.doctorname}}
+                    <span>{{data.doctor.doctortitle}}</span>
                 </h6>
-                <p class="hospital">医院：<span>{{result.doctor.hospitalname}}</span></p>
-                <p class="skill">擅长：<span>{{result.doctor.skill}}</span></p>
-                <a href="/doctor/site/{{result.doctor.userId}}" class="doctor-link">进入医生公共主页</a>
+                <p class="hospital">医院：<span>{{data.doctor.hospitalname}}</span></p>
+                <p class="skill">擅长：<span>{{data.doctor.skill}}</span></p>
+                <a href="/doctor/site/{{data.doctor.userId}}" class="doctor-link">进入医生公共主页</a>
             </div>
             {% endif %}
         </div>
         <div class="col-md-8 doctor-slider">
             <ul id="carousel" class="elastislide-list">
-                {% for i in result.doctorlist.doctor %}
+                {% for i in data.doctorlist.doctor %}
                 <li data-preview="{{i.avatarUrl}}">
                     <a href="#">
                         <img src="{{i.avatarUrl}}" alt="{{i.doctorname}}" />
@@ -134,13 +139,13 @@
                 <h4 class="title-sep">诊断经验分享</h4>
                 <div class="feedback-wrapper sharing-list-wrapper">
                     <ul>
-                        {% if result.comments %}
-                        {% for comment in result.comments %}
+                        {% if data.comments %}
+                        {% for comment in data.comments %}
                         <li>
                             <span class="image">
                             <img src="{{comment.avatar}}" alt="young-m">
                             </span>
-                            <dl><dt><span>就诊医生：<a target="_blank" href="/doctor/site/{{comment.doctorUserId}}">{{comment.receiverName}}</a>&nbsp;&nbsp;<a >({{comment.hospitalName}})</a></span><em>{{comment.createTime}}</em></dt><dd>{{comment.content}} <a target="_blank" href="">详情&gt;</a></dd></dl>
+                            <dl><dt><span>就诊医生：<a target="_blank" href="/doctor/site/{{comment.doctorUserId}}">{{comment.receiverName}}</a>&nbsp;&nbsp;<a >({{comment.hospitalName}})</a></span><em>{{comment.createTime}}</em></dt><dd>{{comment.content}} <a target="_blank" href="/doctor/site/{{comment.doctorUserId}}">详情&gt;</a></dd></dl>
                         </li>
 
 

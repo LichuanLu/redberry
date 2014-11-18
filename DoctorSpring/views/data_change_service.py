@@ -170,6 +170,8 @@ def getDiagnoseDetailInfo(diagnose):
         return
     diagDict={}
     diagDict['id']=diagnose.id
+    if diagnose.diagnoseSeriesNumber:
+        diagDict['diagnosenumber']=diagnose.diagnoseSeriesNumber
     if hasattr(diagnose,"patient") and diagnose.patient:
         if diagnose.patient.realname:
             diagDict['patientName']=diagnose.patient.realname
@@ -385,7 +387,7 @@ def setDiagnoseCommentsDetailInfo(diagnoseCommentsDict):
            user=User.getById(observer)
            if user:
               diagnoseComment['avatar']=user.imagePath
-
+              diagnoseComment['senderName']=user.name
 
         if diagnoseComment.has_key('receiver'):
             receiver=diagnoseComment.get('receiver')

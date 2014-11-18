@@ -11,7 +11,7 @@
 				<div class="form-group">
 					<label class="col-md-4 control-label" for="inPassword">个人电子邮箱：</label>
 					<div class="col-md-8">
-						<input id="inEmail" type="email" name="email" class="form-control" placeholder="用于登陆和联系，不会公开">
+						<input id="inEmail" type="email" name="email" class="form-control" placeholder="用于登录和联系，不会公开">
 					</div>
 				</div>
 				
@@ -53,7 +53,7 @@
 					<label class="col-md-4 control-label" for="">手机号：</label>
 					<div class="col-md-8">
 						<input id="inMobile" type="" name="cellphone" class="form-control" placeholder="11位有效手机号码">
-						<p class="help-block">用于登陆和系统管理员紧急联系方式，此电话不会被公开。</p>
+						<p class="help-block">用于登录和系统管理员紧急联系方式，此电话不会被公开。</p>
 					</div>
 				</div>
 				<a class="col-md-offset-4 service-link">服务条款</a>

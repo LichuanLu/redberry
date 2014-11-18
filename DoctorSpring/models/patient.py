@@ -71,6 +71,15 @@ class Patient(Base):
         if patientID:
             return session.query(Patient.identityPhone).filter(Patient.id == patientID).first()
 
+    @classmethod
+    def is_patient_under_user(cls,userId,patientId):
+        if userId:
+            patient = session.query(Patient).filter(Patient.userID == userId, Patient.status == PatientStatus.diagnose,Patient.id == patientId).first()
+            if patient:
+                return True
+            else:
+                return False
+
 '''
     def __repr__(self):
         return '<Post %s>' % (self.title)

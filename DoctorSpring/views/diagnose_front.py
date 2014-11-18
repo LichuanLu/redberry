@@ -25,6 +25,8 @@ config = config.rec()
 dfView = Blueprint('diagnose_front', __name__)
 
 @dfView.route('/admin/fenzhen',  methods = ['GET', 'POST'])
+@authenticated('admin',constant.RoleId.Admin)
+
 def getDiagnosePage():
     hospitals=Hospital.getAllHospitals(db_session)
     hospitalsDict=object2dict.objects2dicts(hospitals)

@@ -6,13 +6,15 @@
                 <nav class="navbar navbar-default">
                     <div class="collapse navbar-collapse">
                         <ul class="nav navbar-nav gray-base">
-                            <li class="active">
+
+                            <li   {% if data and data.ishomepage %} class="active"   {% endif %}>
+
                                 <a href="/homepage">主页</a>
                             </li>
-                            <li>
+                            <li  {% if data and data.isdoctorlist %} class="active"   {% endif %}>
                                 <a href="/doctor/list">专家库</a>
                             </li>
-                            <li>
+                            <li {% if data and data.ishelpcenter %} class="active"   {% endif %}>
                                 <a href="/help/center">客服中心</a>
                             </li>
 
@@ -51,7 +53,7 @@
                 {% else %}
                 <div class="unlogin-group">
                 <a id="login-link" href="#" data-toggle="modal" data-target=".login-modal">
-                    <span>登陆</span>
+                    <span>登录</span>
                 </a>
                 <div class="bullet"></div>
                 <a id="register-link" href="/register/patient">
