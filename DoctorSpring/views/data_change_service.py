@@ -631,19 +631,19 @@ def setConsultsResult(consutsDict, userId=0):
 
 def getStatusText(status, currentUser, type):
     if status == constant.ConsultStatus.Unread:
-        return u"未读"
+        return u"未读咨询"
     if status == constant.ConsultStatus.Read:
-        return u"已读"
+        return u"已读咨询"
     if status == constant.ConsultStatus.PatientComments:
         if currentUser and type==0:
-            return u"已读"
+            return u"已读咨询"
         else:
-            return u"未读"
+            return u"有新回复"
     if status == constant.ConsultStatus.DoctorComments:
         if currentUser and type==1:
-            return u"已读"
+            return u"已读咨询"
         else:
-            return u"未读"
+            return u"有新回复"
     return u"已读"
 def getAllHospital(hospitals):
     if hospitals is None or len(hospitals)<1:

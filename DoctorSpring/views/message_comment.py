@@ -275,14 +275,12 @@ def getConsultsByUser(userId):
 @mc.route('/consut/<int:consultId>/read', methods = ['GET', 'POST'])
 def changeConsultRead(consultId):
     consult = Consult.getConsultByConsultId(consultId)
-    if consult.type is 0:
-        if consult.userId == session["userId"]:
-            return
-    if consult.type is 1:
-        if consult.doctorId == session["userId"]:
-            return
+    userId = long(session["user_id"])
+    if consult.type == 0:
+        if consult.userId == userId:
+            return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
+    if consult.type == 1:
+        if consult.doctorId == userId:
+            return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
     Consult.changeReadStatus(consultId)
     return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
-
-
-
