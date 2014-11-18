@@ -8,7 +8,7 @@ from forms import LoginForm ,CommentsForm ,ReportForm,AlipayCallBackInfo
 from DoctorSpring import lm
 from database import  db_session
 from sqlalchemy.exc import IntegrityError
-from DoctorSpring.models import User,Patient,Doctor,Diagnose ,DiagnoseTemplate,Report,UserRole
+from DoctorSpring.models import User,Patient,Doctor,Diagnose ,DiagnoseTemplate,Report,UserRole, ReportDiagnoseRelation
 from DoctorSpring.models import User,Comment,Message,DiagnoseLog ,AlipayLog,AlipayChargeRecord
 from DoctorSpring.util import result_status as rs,object2dict ,constant,pdf_utils
 from DoctorSpring.util.authenticated import authenticated
@@ -100,6 +100,11 @@ def addOrUpdateReport():
 
             diagnose.reportId=report.id
             Diagnose.save(diagnose)
+
+            #add report and diagnose to relation table
+            reportDiagnoseRelation = ReportDiagnoseRelation(report.id,diagnose.id)
+            ReportDiagnoseRelation.save(reportDiagnoseRelation)
+
         #flash('成功添加诊断评论')
         if form.status and form.status == constant.ReportStatus.Commited:
             diagnose=Diagnose.getDiagnoseById(form.diagnoseId)
