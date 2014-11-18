@@ -243,7 +243,7 @@ def getConsultsByDoctor(doctorId):
 
 
         consutsDict=object2dict.objects2dicts(consuts)
-        dataChangeService.setConsultsResult(consutsDict, session["userId"])
+        dataChangeService.setConsultsResult(consutsDict, long(session["userId"]))
 
         resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,consutsDict)
         resultDict=resultStatus.__dict__
@@ -265,7 +265,7 @@ def getConsultsByUser(userId):
         else:
             consuts=Consult.getConsultsByUserId(userId, status)
         consutsDict=object2dict.objects2dicts(consuts)
-        dataChangeService.setConsultsResult(consutsDict, session["userId"])
+        dataChangeService.setConsultsResult(consutsDict, long(session["userId"]))
 
         resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,consutsDict)
         resultDict=resultStatus.__dict__

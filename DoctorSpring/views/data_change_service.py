@@ -635,16 +635,16 @@ def getStatusText(status, currentUser, type):
     if status == constant.ConsultStatus.Read:
         return u"已读咨询"
     if status == constant.ConsultStatus.PatientComments:
-        if currentUser and type==0:
+        if currentUser or type==0:
             return u"已读咨询"
         else:
             return u"有新回复"
     if status == constant.ConsultStatus.DoctorComments:
-        if currentUser and type==1:
+        if currentUser or type==1:
             return u"已读咨询"
         else:
             return u"有新回复"
-    return u"已读"
+    return u"已读咨询"
 def getAllHospital(hospitals):
     if hospitals is None or len(hospitals)<1:
         return
