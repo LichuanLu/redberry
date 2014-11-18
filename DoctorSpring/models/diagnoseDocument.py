@@ -528,7 +528,7 @@ class ReportDiagnoseRelation(Base):
     report = relationship("Report", backref=backref('report', order_by=id))
 
     diagnoseId = sa.Column(sa.Integer, sa.ForeignKey('diagnose.id'))
-    diagnose = relationship("Report", backref=backref('diagnose', order_by=id))
+    diagnose = relationship("Diagnose", backref=backref('diagnose', order_by=id))
 
     status=sa.Column(sa.Integer)
 
