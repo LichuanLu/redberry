@@ -221,6 +221,7 @@ class DiagnosePayStatsLogConstant(object):
     Del=1#已删除
     ApplyPay=0#申请支付
     FinishPay=2#支付完成
+    UserRefund=3#用户退款
 
 
 
