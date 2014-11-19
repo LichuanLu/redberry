@@ -213,6 +213,7 @@ class DiagnosePayStatsConstant(object):
     Payable=3#可支付
     All=4#所有的支付信息
     Paying=5#支付中
+    Refund=6#用户申请退款
 
 RollbackPeriod=7
 
