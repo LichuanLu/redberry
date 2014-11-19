@@ -2,6 +2,8 @@
 __author__ = 'chengc017'
 from DoctorSpring.util import constant
 from DoctorSpring.models import File ,Diagnose,User,DiagnoseLog,Comment,Doctor,Hospital
+from DoctorSpring.models import UserRole
+from database import db_session
 
 #type fullFile代表查询文件返回文件全部信息，如果没有只返回FILE URL
 def userCenterDiagnoses(diagnoses,type=None):
@@ -618,7 +620,8 @@ def setConsultsResult(consutsDict, userId=0):
                         consutDict['doctorTitle']=doctor.title
                         if hasattr(doctor,'user') and doctor.user and doctor.user.imagePath:
                             consutDict['avartarUrl']= doctor.user.imagePath
-                    consutDict["statusText"] = getStatusText(consutDict.get("status"), consutDict.get("userId")==userId, 1)
+                    consutDict["statusText"] = getStatusText(consutDict.get("status"),
+                                                             UserRole.checkRole(db_session,userId,constant.RoleId.Doctor))
 
         if type==0:
             if consutDict.get('userId'):
@@ -626,21 +629,22 @@ def setConsultsResult(consutsDict, userId=0):
                 if user:
                     consutDict['userName']=user.name
                     consutDict['avartarUrl']=user.imagePath
-                    consutDict["statusText"] = getStatusText(consutDict.get("status"), consutDict.get("userId")==userId, 0)
+                    consutDict["statusText"] = getStatusText(consutDict.get("status"),
+                                                             UserRole.checkRole(db_session,userId,constant.RoleId.Doctor))
         consutDict['amount']=consutDict.get('count')
 
-def getStatusText(status, currentUser, type):
+def getStatusText(status, role):
     if status == constant.ConsultStatus.Unread:
         return u"未读咨询"
     if status == constant.ConsultStatus.Read:
         return u"已读咨询"
     if status == constant.ConsultStatus.PatientComments:
-        if currentUser or type==0:
+        if not role:
             return u"已读咨询"
         else:
             return u"有新回复"
     if status == constant.ConsultStatus.DoctorComments:
-        if currentUser or type==1:
+        if role:
             return u"已读咨询"
         else:
             return u"有新回复"
