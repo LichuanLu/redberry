@@ -112,7 +112,19 @@ def addOrUpdateReport():
                 Diagnose.changeDiagnoseStatus(diagnose.id,constant.DiagnoseStatus.NeedDiagnose)
             if form.reportId is None and report:
                 form.reportId = report.id
-            Report.update(form.reportId,constant.ReportType.Doctor,status=constant.ReportStatus.Draft)
+            #copy a report and add to relation table
+            newReport = Report(form.techDesc,form.imageDesc,form.diagnoseDesc,form.fileUrl,ReportType.Doctor,constant.ReportStatus.Draft)
+            Report.save(newReport)
+
+
+            reportDiagnoseRelation = ReportDiagnoseRelation(newReport.id,diagnose.id)
+            ReportDiagnoseRelation.save(reportDiagnoseRelation)
+
+            diagnose.reportId=newReport.id
+            Diagnose.save(diagnose)
+            #end copy
+
+
             if diagnose and hasattr(diagnose,'doctor'):
                 doctor=diagnose.doctor
                 if doctor and doctor.userId:
