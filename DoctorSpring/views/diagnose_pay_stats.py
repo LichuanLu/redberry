@@ -1,15 +1,15 @@
 __author__ = 'zhangruixiang'
 
 from flask import Blueprint, session
-from DoctorSpring.models import DiagnosePayStats, DiagnosePayStatsLog
+from DoctorSpring.models import DiagnosePayStats, DiagnosePayStatsLog, DiagnosePayStatsLogRel, Diagnose
 from DoctorSpring.util import result_status as rs,object2dict,constant
-import json,decimal
+import json,decimal,datetime
 
 diagnose_pay_stats_view = Blueprint('diagnose_pay_stats_view', __name__)
 
 @diagnose_pay_stats_view.route('/stats/summary', methods=['GET'])
 def getPayStatsSummary():
-    user = session['userId']
+    user = session['user_id']
     summary = DiagnosePayStats.getSummaryPayStats(user)
     dict={}
     dict['ongoing']=float(summary[0])
@@ -26,14 +26,43 @@ def json_encode_decimal(obj):
     raise TypeError(repr(obj) + " is not JSON serializable")
 
 @diagnose_pay_stats_view.route('/stats/applyCash', methods=['POST'])
-def applyCash(user):
-    user = session['userId']
+def applyCash():
+    return pay(constant.DiagnosePayStatsConstant.Ongoing, constant.DiagnosePayStatsConstant.Paying,
+               constant.DiagnosePayStatsLogConstant.ApplyPay)
+
+@diagnose_pay_stats_view.route('/stats/applyRefund', methods=['POST'])
+def applyRefund():
+    return
+
+@diagnose_pay_stats_view.route('/stats/diagnoseFinish/<int:diagnoseId>', methods=['POST'])
+def diagnoseFinish(diagnoseId):
+    diagnosePayStats = DiagnosePayStats()
+    diagnose = Diagnose.getDiagnoseById(diagnoseId)
+    diagnosePayStats.diagnoseId = diagnoseId
+    diagnosePayStats.diagnoseSeriesNumber = diagnose.diagnoseSeriesNumber
+    diagnosePayStats.userId = session["user_id"]
+    diagnosePayStats.finishDate = datetime.now()
+    diagnosePayStats.money = diagnose.money
+    diagnosePayStats.status = constant.DiagnosePayStatsConstant.Ongoing
+    DiagnosePayStats.save(diagnosePayStats)
+    resultJson=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg)
+    return  json.dumps(resultJson.__dict__,ensure_ascii=False)
+
+@diagnose_pay_stats_view.route('/stats/finishPay', methods=['POST'])
+def finishPay():
+    return pay(constant.DiagnosePayStatsConstant.Paying, constant.DiagnosePayStatsConstant.Paid,
+               constant.DiagnosePayStatsLogConstant.FinishPay)
+
+def pay(statsOldStatus, statsNewStatus, logStatus):
+    user = session['user_id']
     if user is None:
         result=rs.ResultStatus(rs.FAILURE.status,rs.FAILURE.msg)
         return  json.dumps(result.__dict__,ensure_ascii=False)
-    result = DiagnosePayStats.updatePaidStatsStatus(user,constant.DiagnosePayStatsConstant.Ongoing, constant.DiagnosePayStatsConstant.Paying)
+    result = DiagnosePayStats.updatePaidStatsStatus(user,statsOldStatus, statsNewStatus)
+    log = DiagnosePayStatsLog.insertNewItem(logStatus,user,result[0])
+    DiagnosePayStatsLogRel.insertNewItem(result[1],log)
     dict = {}
-    dict['money'] = float(result)
+    dict['money'] = float(result[0])
     resultJson=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,dict)
     return  json.dumps(resultJson.__dict__,ensure_ascii=False)
 
@@ -41,12 +70,12 @@ def applyCash(user):
                                defaults={'paginate':False, 'pageIndex':1, 'pageSize':10}, methods=['GET'])
 @diagnose_pay_stats_view.route('/stats/record/list/<int:stats>/<paginate>/<int:pageIndex>/<int:pageSize>', methods=['GET'])
 def getRecordList(stats, paginate, pageIndex, pageSize):
-    user = session['userId']
+    user = session['user_id']
     return getList(user, DiagnosePayStats.getDetailPayStats(user, stats,paginate,pageIndex,pageSize))
 
 @diagnose_pay_stats_view.route('/stats/log/list', methods=['GET'])
 def getStatsLogList():
-    user = session['userId']
+    user = session['user_id']
     return getList(user, DiagnosePayStatsLog.getLogList(user))
 
 def getList(user, list):
@@ -58,4 +87,3 @@ def getList(user, list):
         result=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,resultLogs)
         return  json.dumps(result.__dict__,ensure_ascii=False)
     return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
-

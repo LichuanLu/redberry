@@ -164,6 +164,7 @@ class DiagnoseLogAction(object):
     DiagnoseNeedUpateAction='暂停分发诊断(需要更多就诊人信息)'
     DiagnoseNeedUpateRecommitAction='重新提交诊断申请(已经修改相应信息)'
     DiagnoseFinished='完成诊断'
+    DiagnoseRefund='诊断退款'
     CancleDiagnose='取消诊断'
 class AlipayLogAction(object):
     StartApplyAlipay='支付开始'
@@ -213,6 +214,7 @@ class DiagnosePayStatsConstant(object):
     Payable=3#可支付
     All=4#所有的支付信息
     Paying=5#支付中
+    Refund=6#用户申请退款
 
 RollbackPeriod=7
 
@@ -220,6 +222,7 @@ class DiagnosePayStatsLogConstant(object):
     Del=1#已删除
     ApplyPay=0#申请支付
     FinishPay=2#支付完成
+    UserRefund=3#用户退款
 
 
 

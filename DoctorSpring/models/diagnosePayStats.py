@@ -120,28 +120,35 @@ class DiagnosePayStats(Base):
     @classmethod
     def updatePaidStatsStatus(cls, user, prevStatus,status):
         if user is None or prevStatus is None or status is None:
-            return
+            return 0,None
         if prevStatus == constant.DiagnosePayStatsConstant.Ongoing:
             total = session.query(sa.func.sum(DiagnosePayStats.money)).filter(user == DiagnosePayStats.userId,
                                                            prevStatus == DiagnosePayStats.status,
                                                            datetime.today()+timedelta(days=-constant.RollbackPeriod)>DiagnosePayStats.finishDate)\
             .group_by(DiagnosePayStats.userId).all()
-            session.query(DiagnosePayStats).filter(user == DiagnosePayStats.userId,
+            result = session.query(DiagnosePayStats).filter(user == DiagnosePayStats.userId,
                                                                  prevStatus == DiagnosePayStats.status,
                                                                  datetime.today()+timedelta(days=-constant.RollbackPeriod)>DiagnosePayStats.finishDate)\
             .update(dict(status=status))
         else:
-            session.query(DiagnosePayStats).filter(user == DiagnosePayStats.userId,
+            result = session.query(DiagnosePayStats).filter(user == DiagnosePayStats.userId,
                                                                   prevStatus == DiagnosePayStats.status) \
             .update(dict(status=status))
-            total = session.query(DiagnosePayStats).filter(user == DiagnosePayStats.userId,
+            total = session.query(sa.func.sum(DiagnosePayStats)).filter(user == DiagnosePayStats.userId,
                                                            prevStatus == DiagnosePayStats.status)\
             .group_by(DiagnosePayStats.userId).all()
         session.commit()
         session.flush()
         if total and total > 0:
-            return total[0][0]
-        return 0
+            return total[0][0],result.id
+        return 0,result.id
+
+    @classmethod
+    def updatePayStatsWhenRefunding(cls, diagnoseId):
+        session.query(DiagnosePayStats).filter(diagnoseId == DiagnosePayStats.diagnoseId)\
+            .update(dict(status=constant.DiagnosePayStatsConstant.Refund))
+        session.commit()
+        session.flush()
 
     @classmethod
     def save(cls,payStats):
@@ -188,6 +195,15 @@ class DiagnosePayStatsLog(Base):
             session.flush()
 
     @classmethod
+    def insertNewItem(cls, action, userId, money):
+        diagnosePayStatsLog = DiagnosePayStatsLog()
+        diagnosePayStatsLog.action = action
+        diagnosePayStatsLog.userId = userId
+        diagnosePayStatsLog.money = money
+        cls.save(diagnosePayStatsLog)
+        return diagnosePayStatsLog.id
+
+    @classmethod
     def getLogList(cls,user):
         return session.query(DiagnosePayStatsLog).filter(user == DiagnosePayStatsLog.userId,
                                                          constant.DiagnosePayStatsLogConstant.FinishPay == DiagnosePayStatsLog.action)\
@@ -211,3 +227,10 @@ class DiagnosePayStatsLogRel(Base):
             session.add(payStatsLogRel)
             session.commit()
             session.flush()
+
+    @classmethod
+    def insertNewItem(cls,statsId,logId):
+        logRel = DiagnosePayStatsLogRel()
+        logRel.payStatsId = statsId
+        logRel.logId = logId
+        cls.save(logRel)

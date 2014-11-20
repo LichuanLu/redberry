@@ -46,6 +46,7 @@ class Diagnose(Base):
     #adminId = sa.Column(sa.INTEGER,sa.ForeignKey('User.id'))
     #administrator = relationship("User", backref=backref('diagnose', order_by=id))
     adminId = sa.Column(sa.INTEGER)
+    money = sa.Column(sa.FLOAT)
 
     uploadUserId = sa.Column(sa.Integer, sa.ForeignKey('user.id'))
     uploadUser = relationship("User", backref=backref('diagnose', order_by=id))
@@ -85,12 +86,15 @@ class Diagnose(Base):
             if diagnose.id:
                 diagnoseSeriesNumber='%s%i'%(constant.DiagnoseSeriesNumberPrefix,constant.DiagnoseSeriesNumberBase+diagnose.id)
                 diagnose.diagnoseSeriesNumber=diagnoseSeriesNumber
+                diagnose.money = cls.getPayCountByDiagnose(diagnose)
                 session.commit()
             session.flush()
+
     @classmethod
     def getDiagnoseById(cls,diagnoseId):
         if diagnoseId:
             return session.query(Diagnose).filter(Diagnose.id==diagnoseId,Diagnose.status!=DiagnoseStatus.Del).first()
+
     @classmethod
     def addAdminIdAndChangeStatus(cls,diagnoseId,adminId):
         if adminId is None:
@@ -126,7 +130,29 @@ class Diagnose(Base):
                 session.commit()
                 session.flush()
 
+    @classmethod
+    def getPayCountByDiagnose(cls,diagnose):
+        if diagnose is None:
+            return
+        if diagnose and hasattr(diagnose,'pathology') and diagnose.pathology and hasattr(diagnose.pathology,"pathologyPostions") \
+                and diagnose.pathology.pathologyPostions:
+            diagnoseMethod=diagnose.pathology.diagnoseMethod
+            count=len(diagnose.pathology.pathologyPostions)
+            return cls.getPayCount(diagnoseMethod,count,cls.getUserDiscount(diagnose.patientId))
+        return
 
+    @classmethod
+    def getPayCount(cls,method, count, discount=1):
+        money = 0
+        if method == constant.DiagnoseMethod.Mri:
+            money=constant.DiagnoseMethodCost.Mri*count*discount
+        elif method == constant.DiagnoseMethod.Ct:
+            money=constant.DiagnoseMethodCost.Ct*count*discount
+        return money
+
+    @classmethod
+    def getUserDiscount(cls,patientId):
+        return 1
 
     @classmethod
     def getDiagnosesByDoctorId(cls,session,doctorId,pagger,status=None,startTime=SystemTimeLimiter.startTime,endTime=SystemTimeLimiter.endTime):
