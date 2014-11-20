@@ -164,6 +164,7 @@ class DiagnoseLogAction(object):
     DiagnoseNeedUpateAction='暂停分发诊断(需要更多就诊人信息)'
     DiagnoseNeedUpateRecommitAction='重新提交诊断申请(已经修改相应信息)'
     DiagnoseFinished='完成诊断'
+    DiagnoseRefund='诊断退款'
     CancleDiagnose='取消诊断'
 class AlipayLogAction(object):
     StartApplyAlipay='支付开始'

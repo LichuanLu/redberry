@@ -1,6 +1,6 @@
 # coding: utf-8
 __author__ = 'chengc017'
-from DoctorSpring.util import constant
+from DoctorSpring.util import constant,helper
 from DoctorSpring.models import File ,Diagnose,User,DiagnoseLog,Comment,Doctor,Hospital
 from DoctorSpring.models import UserRole
 from database import db_session
@@ -150,10 +150,10 @@ def getDiagnoseListByKefu(diagnoses):
                     diagDict['positionName']=positions
             #print diagDict['doctorName'],diagDict['positons']
             if pathology.diagnoseMethod==constant.DiagnoseMethod.Mri:
-                diagDict['payAmount']=postionLen*constant.DiagnoseMethodCost.Mri
+                diagDict['payAmount']=helper.getPayCount(constant.DiagnoseMethodCost.Mri,postionLen,helper.getUserDiscount(diagnose.patientId))
                 diagDict['diagnoseMethod']=constant.DiagnoseMethod.Mri
             elif pathology.diagnoseMethod==constant.DiagnoseMethod.Ct:
-                diagDict['payAmount']=postionLen*constant.DiagnoseMethodCost.Ct
+                diagDict['payAmount']=helper.getPayCount(constant.DiagnoseMethodCost.Ct,postionLen,helper.getUserDiscount(diagnose.patientId))
                 diagDict['diagnoseMethod']=constant.DiagnoseMethod.Ct
 
 

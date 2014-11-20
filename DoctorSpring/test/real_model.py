@@ -379,9 +379,6 @@ class PayStatsGetTestCase(unittest.TestCase):
         summary = DiagnosePayStats.getSummaryPayStats(1)
         print summary[0], summary[1], summary[2], summary[3]
 
-    def testUpdateStats(self):
-        DiagnosePayStats.updatePaidStatsStatus(1, 0, 2)
-
 
 
 
