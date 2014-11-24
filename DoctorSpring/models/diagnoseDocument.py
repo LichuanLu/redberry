@@ -143,11 +143,12 @@ class Diagnose(Base):
 
     @classmethod
     def getPayCount(cls,method, count, discount=1):
-        money = 0
         if method == constant.DiagnoseMethod.Mri:
-            money=constant.DiagnoseMethodCost.Mri*count*discount
+            money=float(constant.DiagnoseMethodCost.Mri*count*discount)
         elif method == constant.DiagnoseMethod.Ct:
-            money=constant.DiagnoseMethodCost.Ct*count*discount
+            money=float(constant.DiagnoseMethodCost.Ct*count*discount)
+        else:
+            money=float(0)
         return money
 
     @classmethod
