@@ -118,6 +118,16 @@ class DiagnosePayStats(Base):
         return ongoing,usable,paid,lastMonthRevenue
 
     @classmethod
+    def getPayStatsByDiagnoseId(cls, diagnoseId):
+        return session.query(DiagnosePayStats).filter(diagnoseId==DiagnosePayStats.diagnoseId).all()
+
+    @classmethod
+    def updatePayStats(cls, payStats):
+        session.update(payStats)
+        session.flush()
+        session.commit()
+
+    @classmethod
     def updatePaidStatsStatus(cls, user, prevStatus,status):
         if user is None or prevStatus is None or status is None:
             return 0,None
