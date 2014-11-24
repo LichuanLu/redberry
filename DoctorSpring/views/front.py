@@ -439,8 +439,16 @@ def generateAliPay(userId,diagnoseId,diagnose=None):
         needPay=None
         if hasattr(diagnose,'pathology') and hasattr(diagnose.pathology,'pathologyPostions'):
             if len(diagnose.pathology.pathologyPostions)>0:
-                needPay=constant.DiagnoseCost*len(diagnose.pathology.pathologyPostions)
-        needPay=constant.DiagnoseCost
+                if diagnose.pathology.diagnoseMethod==constant.DiagnoseMethod.Mri:
+                    needPay=diagnose.getPayCount(constant.DiagnoseMethod.Mri,len(diagnose.pathology.pathologyPostions),diagnose.getUserDiscount(diagnose.patientId))
+                elif diagnose.pathology.diagnoseMethod==constant.DiagnoseMethod.Ct:
+                    needPay=diagnose.getPayCount(constant.DiagnoseMethod.Ct,len(diagnose.pathology.pathologyPostions),diagnose.getUserDiscount(diagnose.patientId))
+            else:
+                result=rs.ResultStatus(rs.FAILURE.status,"诊断不存在或这状态不对")
+                return  json.dumps(result.__dict__,ensure_ascii=False)
+        else:
+            result=rs.ResultStatus(rs.FAILURE.status,"诊断不存在或这状态不对")
+            return  json.dumps(result.__dict__,ensure_ascii=False)
 
         if hasattr(diagnose,'doctor') and hasattr(diagnose.doctor,'username'):
 

@@ -200,8 +200,8 @@ class DiagnoseMethod(object):
     Mri="mri"
     Ct="ct"
 class DiagnoseMethodCost(object):
-    Mri=0.2
-    Ct=0.4
+    Mri=0.02
+    Ct=0.04
 
 class MobileMessageConstant(object):
     UrlPrefix="http://www.ezhenduan.com/pay/"
