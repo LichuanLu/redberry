@@ -204,7 +204,9 @@ def applyDiagnoseForm(formid):
                         new_userrole = UserRole(new_user.id, RoleId.Patient)
                         UserRole.save(new_userrole)
                         sendRegisterMobileMessage(session.get('userId'),new_diagnose,new_user.phone,passwd)
-
+                    else:
+                        new_patient.userID = userQuery.first().id
+                        Patient.save(new_patient)
                 form_result.data = {'formId': 3, }
             else:
                 form_result = ResultStatus(FAILURE.status, "找不到第一步草稿")
