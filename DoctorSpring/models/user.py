@@ -84,6 +84,12 @@ class User(Base):
             return session.query(User).filter(User.id==userId).first()
         return session.query(User).filter(User.id==userId,User.status==status).first()
     @classmethod
+    def getByPhone(cls, phoneNum):
+        return session.query(User).filter(User.phone == phoneNum)
+    @classmethod
+    def getByEmail(cls, email):
+        return session.query(User).filter(User.email == email)
+    @classmethod
     def update(cls,userId,name=None,account=None,mobile=None,address=None,email=None,identityCode=None,yibaoCard=None,passwd=None,isBindPhone=None,imagePath=None,status=None):
         if userId is None or userId<1:
             return
@@ -138,6 +144,19 @@ class User(Base):
             return session.query(User).filter(User.email == user_name, User.status == ModelStatus.Normal).first()
         else:
             return session.query(User).filter(User.phone == user_name, User.status == ModelStatus.Normal).first()
+
+
+    @classmethod
+    def get_id_by_phone(cls, mobileNumber):
+        return session.query(User.id).filter(User.phone == mobileNumber).first()
+
+    @classmethod
+    def is_existing_phone(cls, mobileNumber):
+        if session.query(User.id).filter(User.phone == mobileNumber).first() is None:
+            return False
+        else:
+            return True
+
 
 
 class UserRole(Base):

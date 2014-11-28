@@ -277,9 +277,15 @@ def changeConsultRead(consultId):
     consult = Consult.getConsultByConsultId(consultId)
     userId = long(session["user_id"])
     if consult.type == 0:
+        if consult.status == constant.ConsultStatus.DoctorComments:
+            Consult.changeReadStatus(consultId)
+            return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
         if consult.userId == userId:
             return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
     if consult.type == 1:
+        if consult.status == constant.ConsultStatus.PatientComments:
+            Consult.changeReadStatus(consultId)
+            return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
         if consult.doctorId == userId:
             return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
     Consult.changeReadStatus(consultId)

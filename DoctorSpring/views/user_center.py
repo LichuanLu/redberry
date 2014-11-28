@@ -4,7 +4,7 @@ __author__ = 'ccheng'
 from flask import Flask, request, session, g, redirect, url_for, Blueprint, jsonify
 from flask import abort, render_template, flash
 from flask.ext.login import login_user, logout_user, current_user, login_required
-from forms import LoginForm ,CommentsForm ,UserFavortiesForm,ThanksNoteForm ,UserUpdateForm,UserChangePasswdForm,DoctorUpdateForm
+from forms import LoginForm ,CommentsForm ,UserFavortiesForm,ThanksNoteForm ,UserUpdateForm,UserChangePasswdForm,DoctorUpdateForm,UserResetPasswdForm
 from DoctorSpring import lm
 from database import  db_session
 from sqlalchemy.exc import IntegrityError
@@ -859,6 +859,7 @@ def checkVerifyCode():
     mobile=request.form.get('mobile')
     verifyCode=session.get('verifyCode')
     userId=session.get('userId')
+
     if verifyCode is None:
         result=rs.ResultStatus(rs.FAILURE.status,"请重新产生验证码")
         return  json.dumps(result.__dict__,ensure_ascii=False)
@@ -885,6 +886,73 @@ def checkVerifyCode():
     else:
         result=rs.ResultStatus(rs.FAILURE.status,"验证码错误，请重新输入验证码")
         return  json.dumps(result.__dict__,ensure_ascii=False)
+
+@uc.route('/user/mobile/VerifyPhone/<string:phoneNumber>', methods=['GET','POST'])
+def getMobileVerifyPhone(phoneNumber=None):
+    try:
+        telPhoneNo=str(phoneNumber)
+        if User.is_existing_phone(telPhoneNo):
+            LOG.info("verify success:" + phoneNumber)
+            return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
+        else:
+            result=rs.ResultStatus(rs.FAILURE.status,"电话号码不存在")
+            #LOG.info("!!!!" + str(result.__dict__) + "!!!!")
+            return  json.dumps(result.__dict__,ensure_ascii=False)
+
+    except Exception,e:
+        LOG.error(e.message)
+        return json.dumps(rs.FAILURE.__dict__,ensure_ascii=False)
+
+
+#get and check verify code for forgetPwd
+@uc.route('/user/mobile/VerifyCode/<string:phoneNumber>', methods=['GET','POST'])
+def getMobileVerifyCodePwd(phoneNumber=None):
+
+    from DoctorSpring.util import verify_code,sms_utils
+
+    telPhoneNo=str(phoneNumber)
+    verifyCode= verify_code.generatorVerifyCode()
+    LOG.info("产生验证码 to " + phoneNumber)
+    #LOG.info(type(str(phoneNumber)))
+    session['verifyCode']=verifyCode
+
+    smsRc=sms_utils.RandCode()
+    template_param = {'param1':verifyCode}
+    smsRc.send_emp_sms(telPhoneNo,smsRc.TEMPLATE_ID_1,json.dumps(template_param))
+    return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
+
+
+@uc.route('/user/mobile/update/<string:phoneNumber>', methods=['GET','POST'])
+def checkVerifyCodePwd(phoneNumber=None):
+    code=request.form.get('verifyCode')
+    mobile=phoneNumber
+    verifyCode=session.get('verifyCode')
+    user_id = User.get_id_by_phone(mobile)[0]
+    userId = str(int(user_id))
+
+    if verifyCode is None:
+        result=rs.ResultStatus(rs.FAILURE.status,"请重新产生验证码")
+        return  json.dumps(result.__dict__,ensure_ascii=False)
+    if code is None:
+        result=rs.ResultStatus(rs.FAILURE.status,"验证码不能为空,请输入验证码")
+        return  json.dumps(result.__dict__,ensure_ascii=False)
+    if code == verifyCode:
+        return  json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
+    else:
+        result=rs.ResultStatus(rs.FAILURE.status,"验证码错误，请重新输入验证码")
+        return  json.dumps(result.__dict__,ensure_ascii=False)
+
+#reset password in forgetPwd
+@uc.route('/account/resetPasswd/<string:mobileNumber>', methods=['GET','POST'])
+def resetPasswd(mobileNumber):
+    userId=str(int(User.get_id_by_phone(mobileNumber)[0]))
+    form=UserResetPasswdForm(request.form)
+    result=form.validate()
+    if result.status==rs.SUCCESS.status:
+        user = User.getById(userId)
+        newHashPasswd=generate_password_hash(form.newPasswd)
+        User.update(userId,passwd=newHashPasswd)
+    return  json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
 
 
 @uc.route('/pay/<string:alipayHashcode>', methods=['GET','POST'])

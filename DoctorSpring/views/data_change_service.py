@@ -150,10 +150,10 @@ def getDiagnoseListByKefu(diagnoses):
                     diagDict['positionName']=positions
             #print diagDict['doctorName'],diagDict['positons']
             if pathology.diagnoseMethod==constant.DiagnoseMethod.Mri:
-                diagDict['payAmount']=helper.getPayCount(constant.DiagnoseMethodCost.Mri,postionLen,helper.getUserDiscount(diagnose.patientId))
+                diagDict['payAmount']=diagnose.getPayCount(constant.DiagnoseMethod.Mri,postionLen,diagnose.getUserDiscount(diagnose.patientId))
                 diagDict['diagnoseMethod']=constant.DiagnoseMethod.Mri
             elif pathology.diagnoseMethod==constant.DiagnoseMethod.Ct:
-                diagDict['payAmount']=helper.getPayCount(constant.DiagnoseMethodCost.Ct,postionLen,helper.getUserDiscount(diagnose.patientId))
+                diagDict['payAmount']=diagnose.getPayCount(constant.DiagnoseMethod.Ct,postionLen,diagnose.getUserDiscount(diagnose.patientId))
                 diagDict['diagnoseMethod']=constant.DiagnoseMethod.Ct
 
 

@@ -302,19 +302,21 @@ class RegisterFormPatent(object):
 
     def validate(self):
         try:
-
-            if self.nickname is None:
+            if self.nickname is None or self.nickname == u"":
                 failure = ResultStatus(FAILURE.status, "昵称为空")
                 return failure
-            if self.password is None:
+            if self.password is None or self.password == u"":
                 failure = ResultStatus(FAILURE.status, "密码为空")
                 return failure
-            if self.name is None:
+            if self.name is None or self.name == u"":
                 failure = ResultStatus(FAILURE.status, "用户名为空")
                 return failure
             else:
-                user = User.get_by_name(self.name)
-                if user is not None:
+                if '@' in self.name:
+                    user = User.getByEmail(self.name)
+                else:
+                    user = User.getByPhone(self.name)
+                if user.count() > 0:
                     failure = ResultStatus(FAILURE.status, "该用户已存在")
                     return failure
         except Exception, e:
@@ -406,6 +408,17 @@ class UserChangePasswdForm(object) :
             return ResultStatus(FAILURE.status,"输入的密码长度必须大于6小于50")
         return SUCCESS
 
+#Used for forgetPwd feature
+class UserResetPasswdForm(object) :
+    userId = None
+    newPasswd = None
+    def __init__(self,form):
+        self.newPasswd=form.get('newPasswd')
+    def validate(self):
+
+        if self.newPasswd is None or len(self.newPasswd)<8:
+            return ResultStatus(FAILURE.status,"输入的密码长度必须大于6小于50")
+        return SUCCESS
 
 class RegisterFormDoctor(object):
     email = None

@@ -1,7 +1,7 @@
 __author__ = 'zhangruixiang'
 
 from flask import Blueprint, session
-from DoctorSpring.models import DiagnosePayStats, DiagnosePayStatsLog, DiagnosePayStatsLogRel, Diagnose
+from DoctorSpring.models import DiagnosePayStats, DiagnosePayStatsLog, DiagnosePayStatsLogRel, Diagnose, DiagnoseLog
 from DoctorSpring.util import result_status as rs,object2dict,constant
 import json,decimal,datetime
 
@@ -30,9 +30,20 @@ def applyCash():
     return pay(constant.DiagnosePayStatsConstant.Ongoing, constant.DiagnosePayStatsConstant.Paying,
                constant.DiagnosePayStatsLogConstant.ApplyPay)
 
-@diagnose_pay_stats_view.route('/stats/applyRefund', methods=['POST'])
-def applyRefund():
-    return
+@diagnose_pay_stats_view.route('/stats/applyRefund/<int:diagnoseId>', methods=['POST'])
+def applyRefund(diagnoseId):
+    userId = session['user_id']
+    diagoseLog=DiagnoseLog(userId,diagnoseId,constant.DiagnoseLogAction.DiagnoseRefund)
+    DiagnoseLog.save(session,diagoseLog)
+
+    diagnose = Diagnose.getDiagnoseById(diagnoseId)
+    if diagnose.status == constant.DiagnoseStatus.Diagnosed:
+        diagnosePayStats = DiagnosePayStats.getPayStatsByDiagnoseId(diagnoseId)
+        for payStats in diagnosePayStats:
+            payStats.status = constant.DiagnosePayStatsConstant.Refund
+        DiagnosePayStats.updatePayStats(diagnosePayStats)
+
+    return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
 
 @diagnose_pay_stats_view.route('/stats/diagnoseFinish/<int:diagnoseId>', methods=['POST'])
 def diagnoseFinish(diagnoseId):

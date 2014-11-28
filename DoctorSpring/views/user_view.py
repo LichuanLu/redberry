@@ -103,6 +103,10 @@ def register_patient():
     return jsonify(form_result.__dict__,ensure_ascii=False)
 
 
+@user_view.route('/forgetPwd',  methods = ['GET', 'POST'])
+def forgetPwd_page():
+    return render_template("forgetPwd.html")
+
 
 def login_session(user):
     login_user(user)
