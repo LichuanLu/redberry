@@ -1,9 +1,12 @@
 # coding: utf-8
 __author__ = 'chengc017'
-from DoctorSpring.util import constant
+from DoctorSpring.util import constant,helper
 from DoctorSpring.models import File ,Diagnose,User,DiagnoseLog,Comment,Doctor,Hospital
+from DoctorSpring.models import UserRole
+from database import db_session
 
-def userCenterDiagnoses(diagnoses):
+#type fullFile代表查询文件返回文件全部信息，如果没有只返回FILE URL
+def userCenterDiagnoses(diagnoses,type=None):
     if diagnoses is None or len(diagnoses)<1:
         return
     result=[]
@@ -33,18 +36,22 @@ def userCenterDiagnoses(diagnoses):
         dicomUrl=None
         otherUrls=None
         if diagnose.pathologyId:
-            dicomUrl=File.getDicomFileUrl(diagnose.pathologyId)
+            dicomUrl=File.getDicomFileUrl(diagnose.pathologyId,type)
             if dicomUrl:
                 diagDict['hasDicom'] = True
             else:
                 diagDict['hasDicom'] = False
-            otherUrls=File.getFilesUrl(diagnose.pathologyId)
+            otherUrls=File.getFilesUrl(diagnose.pathologyId,type)
             if otherUrls:
                 diagDict['hasDoc']=True
             else:
                 diagDict['hasDoc']=False
-        diagDict['dicomUrl'] = dicomUrl
-        diagDict['docUrl']=otherUrls
+        if type:
+            diagDict['dicomUrl'] = parseFileUrl(dicomUrl)
+            diagDict['docUrl']=parseFilesUrl(otherUrls)
+        else:
+            diagDict['dicomUrl'] = dicomUrl
+            diagDict['docUrl']= otherUrls
 
         if hasattr(diagnose,'report') and diagnose.report and diagnose.report.fileUrl:
             diagDict['reportUrl']= diagnose.report.fileUrl
@@ -70,6 +77,25 @@ def userCenterDiagnoses(diagnoses):
         result.append(diagDict)
 
     return result
+
+def parseFileUrl(fileUrlContainer):
+    result = {}
+    if fileUrlContainer:
+        result['url'] = fileUrlContainer[0]
+        result['name'] = fileUrlContainer[1]
+        result['size'] = fileUrlContainer[2]
+        result['id'] = fileUrlContainer[3]
+    return result
+
+def parseFilesUrl(fileUrlContainer):
+    if fileUrlContainer and len(fileUrlContainer) > 0:
+       resultArr = []
+       for item in fileUrlContainer:
+            resultArr.append(parseFileUrl(item))
+       return resultArr
+    return None
+
+
 def getDiagnoseListByKefu(diagnoses):
     if diagnoses is None or len(diagnoses)<1:
         return
@@ -124,10 +150,10 @@ def getDiagnoseListByKefu(diagnoses):
                     diagDict['positionName']=positions
             #print diagDict['doctorName'],diagDict['positons']
             if pathology.diagnoseMethod==constant.DiagnoseMethod.Mri:
-                diagDict['payAmount']=postionLen*constant.DiagnoseMethodCost.Mri
+                diagDict['payAmount']=diagnose.getPayCount(constant.DiagnoseMethod.Mri,postionLen,diagnose.getUserDiscount(diagnose.patientId))
                 diagDict['diagnoseMethod']=constant.DiagnoseMethod.Mri
             elif pathology.diagnoseMethod==constant.DiagnoseMethod.Ct:
-                diagDict['payAmount']=postionLen*constant.DiagnoseMethodCost.Ct
+                diagDict['payAmount']=diagnose.getPayCount(constant.DiagnoseMethod.Ct,postionLen,diagnose.getUserDiscount(diagnose.patientId))
                 diagDict['diagnoseMethod']=constant.DiagnoseMethod.Ct
 
 
@@ -146,6 +172,8 @@ def getDiagnoseDetailInfo(diagnose):
         return
     diagDict={}
     diagDict['id']=diagnose.id
+    if diagnose.diagnoseSeriesNumber:
+        diagDict['diagnosenumber']=diagnose.diagnoseSeriesNumber
     if hasattr(diagnose,"patient") and diagnose.patient:
         if diagnose.patient.realname:
             diagDict['patientName']=diagnose.patient.realname
@@ -212,6 +240,7 @@ def getDiagnoseDetailInfoByPatient(session,diagnose):
     #diagDict['type']=diagnose.type
     if hasattr(diagnose,"doctor") and diagnose.doctor and diagnose.doctor.username:
         diagDict['doctorName']=diagnose.doctor.username
+        diagDict['doctorUserId']=diagnose.doctor.userId
     if diagnose.createDate:
         diagDict["applyTime"]=diagnose.createDate.strftime('%Y-%m-%d')
     if diagnose.status:
@@ -244,9 +273,9 @@ def getDiagnoseDetailInfoByPatient(session,diagnose):
             diagDict['hospitalHistory']=pathology.hospital.name
             diagDict['hospitalId']=pathology.hospitalId
 
-
-    if hasattr(diagnose,'report') and diagnose.report:
+    if hasattr(diagnose,'report') and diagnose.report and diagnose.report.fileUrl:
         diagDict['reportId']=diagnose.reportId
+        diagDict['reportUrl']= diagnose.report.fileUrl
         # diagDict['techDes']=diagnose.report.techDesc
         # diagDict['imageDes']=diagnose.report.imageDesc
         # diagDict['diagnoseResult']=diagnose.report.diagnoseDesc
@@ -360,7 +389,7 @@ def setDiagnoseCommentsDetailInfo(diagnoseCommentsDict):
            user=User.getById(observer)
            if user:
               diagnoseComment['avatar']=user.imagePath
-
+              diagnoseComment['senderName']=user.name
 
         if diagnoseComment.has_key('receiver'):
             receiver=diagnoseComment.get('receiver')
@@ -578,7 +607,7 @@ def getAccountInfo(userDict):
 
         return userDict
     return None
-def setConsultsResult(consutsDict):
+def setConsultsResult(consutsDict, userId=0):
     if consutsDict is None:
         return
     for consutDict in consutsDict:
@@ -591,14 +620,35 @@ def setConsultsResult(consutsDict):
                         consutDict['doctorTitle']=doctor.title
                         if hasattr(doctor,'user') and doctor.user and doctor.user.imagePath:
                             consutDict['avartarUrl']= doctor.user.imagePath
+                    consutDict["statusText"] = getStatusText(consutDict.get("status"),
+                                                             UserRole.checkRole(db_session,userId,constant.RoleId.Doctor))
+
         if type==0:
             if consutDict.get('userId'):
                 user=User.getById(consutDict.get('userId'))
                 if user:
                     consutDict['userName']=user.name
                     consutDict['avartarUrl']=user.imagePath
+                    consutDict["statusText"] = getStatusText(consutDict.get("status"),
+                                                             UserRole.checkRole(db_session,userId,constant.RoleId.Doctor))
         consutDict['amount']=consutDict.get('count')
 
+def getStatusText(status, role):
+    if status == constant.ConsultStatus.Unread:
+        return u"未读咨询"
+    if status == constant.ConsultStatus.Read:
+        return u"已读咨询"
+    if status == constant.ConsultStatus.PatientComments:
+        if not role:
+            return u"已读咨询"
+        else:
+            return u"有新回复"
+    if status == constant.ConsultStatus.DoctorComments:
+        if role:
+            return u"已读咨询"
+        else:
+            return u"有新回复"
+    return u"已读咨询"
 def getAllHospital(hospitals):
     if hospitals is None or len(hospitals)<1:
         return

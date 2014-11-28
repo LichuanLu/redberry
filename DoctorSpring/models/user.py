@@ -84,6 +84,12 @@ class User(Base):
             return session.query(User).filter(User.id==userId).first()
         return session.query(User).filter(User.id==userId,User.status==status).first()
     @classmethod
+    def getByPhone(cls, phoneNum):
+        return session.query(User).filter(User.phone == phoneNum)
+    @classmethod
+    def getByEmail(cls, email):
+        return session.query(User).filter(User.email == email)
+    @classmethod
     def update(cls,userId,name=None,account=None,mobile=None,address=None,email=None,identityCode=None,yibaoCard=None,passwd=None,isBindPhone=None,imagePath=None,status=None):
         if userId is None or userId<1:
             return

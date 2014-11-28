@@ -56,6 +56,7 @@ def endterDoctorHome():
     return render_template("doctorHome.html",data=resultDate)
 
 @uc.route('/patienthome',  methods = ['GET', 'POST'])
+@authenticated('admin',constant.RoleId.Patient)
 def endterPatientHome():
     if session.has_key('userId'):
         userId=session['userId']
@@ -81,11 +82,14 @@ def endterPatientHome():
         return redirect(LOGIN_URL)
 
 @uc.route('/admin/kefu',  methods = ['GET', 'POST'])
+@authenticated('admin',constant.RoleId.Kefu)
+
 def endterKefuhome():
 
     return render_template("adminKefu.html")
 
 @uc.route('/hospital/user',  methods = ['GET', 'POST'])
+@authenticated('admin',constant.RoleId.HospitalUser)
 def endterHospitalUserHome():
     userId=session['userId']
     user=User.getById(userId)
@@ -261,7 +265,8 @@ def getDiagnoseListByHospitalUser():
      pageSize=request.args.get('pageSize')
      pager=Pagger(pageNo,pageSize)
      diagnoses=Diagnose.getNeedDealDiagnoseByHospitalUser(db_session,userId,None,pager)
-     diagnosesDict=dataChangeService.userCenterDiagnoses(diagnoses)
+     #type fullFile代表查询文件返回文件全部信息，如果没有只返回FILE URL
+     diagnosesDict=dataChangeService.userCenterDiagnoses(diagnoses,'fullFile')
 
 
      resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,diagnosesDict)
@@ -499,10 +504,36 @@ def getUserFavorties(userId):
 def generatorPdf(diagnoseId):
 
     diagnose=Diagnose.getDiagnoseById(diagnoseId)
+    if session.has_key('userId'):
+        userId=session['userId']
+    if userId is None:
+        return redirect('/loginPage')
 
+    resHtml = None
+
+    if UserRole.checkRole(db_session,userId,constant.RoleId.Patient) and Patient.is_patient_under_user(int(userId),diagnose.patientId):
+        resHtml = renderHtmlFromDiagnose(diagnose)
+
+    if UserRole.checkRole(db_session,userId,constant.RoleId.Admin) and (int(userId) == diagnose.adminId):
+        resHtml = renderHtmlFromDiagnose(diagnose)
+
+    if UserRole.checkRole(db_session,userId,constant.RoleId.Doctor) and (int(userId) == diagnose.doctorId):
+        resHtml = renderHtmlFromDiagnose(diagnose)
+
+    if UserRole.checkRole(db_session,userId,constant.RoleId.HospitalUser) and (int(userId) == diagnose.uploadUserId):
+        resHtml = renderHtmlFromDiagnose(diagnose)
+
+    if resHtml:
+        return resHtml
+    else:
+        return redirect('/error')
+
+def renderHtmlFromDiagnose(diagnose):
     if hasattr(diagnose,'report'):
         report=diagnose.report
-        if diagnose and report and report.status==ReportStatus.Commited and report.type==ReportType.Doctor:
+        #edit by lichuan , any one can take a look at the html
+        # if diagnose and report and report.status==ReportStatus.Commited and report.type==ReportType.Doctor:
+        if diagnose and report:
             data={}
             data['techDesc']=report.techDesc
             data['imageDesc']=report.imageDesc
@@ -536,7 +567,6 @@ def generatorPdf(diagnoseId):
             # return render_template("testpdf.html",getAvatar=getAvatar)
             return html
     return None
-
 
 
 @uc.route('/gratitude/create',  methods = ['GET', 'POST'])

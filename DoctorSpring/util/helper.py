@@ -24,12 +24,7 @@ def getPayCountByDiagnoseId(diagnoseId):
     and diagnose.pathology.pathologyPostions:
         diagnoseMethod=diagnose.pathology.diagnoseMethod
         count=len(diagnose.pathology.pathologyPostions)
-        money=0
-        if diagnoseMethod== DiagnoseMethod.Mri:
-              money=DiagnoseMethodCost.Mri*count
-        elif diagnoseMethod==DiagnoseMethod.Ct:
-            money=DiagnoseMethodCost.Ct*count
-        return money
+        return Diagnose.getPayCount(diagnoseMethod,count,Diagnose.getUserDiscount(diagnose.patientId))
 
 
 

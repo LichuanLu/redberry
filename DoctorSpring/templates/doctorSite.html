@@ -40,7 +40,7 @@
                 {% else %}
                 <div class="unlogin-group">
                     <a id="login-link" href="#" data-toggle="modal" data-target=".login-modal">
-                        <span>登陆</span>
+                        <span>登录</span>
                     </a>
                     <div class="bullet"></div>
                     <a id="register-link" href="/register/patient">
@@ -175,7 +175,7 @@
                                 {% endif %}
                             </div>
                             <div class="btn-wrapper">
-                                <a href="/applyDiagnose?doctorid={{data.doctor.id}}" target="_blank" class="btn btn-warning">申请诊断</a>
+                                <a href="/applyDiagnose?doctorid={{data.doctor.id}}" target="_blank" class="btn btn-info">申请专家诊断</a>
                             </div>
                             <div class="sharing-wrapper">
                                 <h6 class="content-title">
@@ -203,7 +203,7 @@
                                                 <dd>
                                                     {{comment.content}}
                                                 </dd>
-                                                <div class="time">{{comment.receiverName}}   于 {{comment.createTime}} 分享的就医经验</div>
+                                                <div class="time">{{comment.senderName}}   于 {{comment.createTime}} 分享的就医经验</div>
                                             </dl>
                                         </li>
                                         {% endfor %}

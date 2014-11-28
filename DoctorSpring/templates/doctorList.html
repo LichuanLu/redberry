@@ -27,7 +27,7 @@
 							<li class="active">
 								<a href="javascript:void(0);" data-skillId="0">全部</a>
 							</li>
-                            {% for i in result.skills %}
+                            {% for i in data.skills %}
                             <li>
                                 <a href="javascript:void(0);" data-skillId="{{i.id}}">{{i.name}}</a>
                             </li>
@@ -42,7 +42,7 @@
 							<li class="active">
 								<a href="javascript:void(0);" data-hospitalId="0">全部</a>
 							</li>
-                            {% for i in result.hospitals %}
+                            {% for i in data.hospitals %}
                             <li>
                                 <a href="javascript:void(0);" data-hospitalId="{{i.id}}">{{i.name}}</a>
                             </li>

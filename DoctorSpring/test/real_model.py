@@ -2,7 +2,7 @@
 __author__ = 'jeremyxu'
 
 import unittest
-from DoctorSpring.models import Skill, Location, User, Doctor, Hospital, Department, Patient, Doctor2Skill ,Position, UserRole, DoctorProfile
+from DoctorSpring.models import Skill, Location, User, Doctor, Hospital, Department, Patient, Doctor2Skill ,Position, UserRole, DoctorProfile, DiagnosePayStats
 from DoctorSpring.util.constant import UserStatus, RoleId, DoctorProfileType, DoctorType
 from database import Base,db_session as session
 from DoctorSpring.models.comment import Comment
@@ -12,7 +12,7 @@ class RoleTestCase(unittest.TestCase):
         from DoctorSpring.models.user import Role,UserRole
         role=Role()
         role.id=1
-        role.roleName='admin'
+        role.roleName='fenzhen'
         session.add(role)
 
         role=Role()
@@ -29,6 +29,13 @@ class RoleTestCase(unittest.TestCase):
         role.id=4
         role.roleName='hospitalUser'
         session.add(role)
+
+        role=Role()
+        role.id=6
+        role.roleName='kefu'
+        session.add(role)
+
+
 
         session.commit()
         session.flush()
@@ -105,6 +112,7 @@ class UserTestCase(unittest.TestCase):
         new_user_1.email = "yinhong@qq.com"
         new_user_1.phone = "111111111111"
         new_user_1.type = UserStatus.doctor
+        new_user_1.imagePath = '/static/assets/image/doctor1.png'
         User.save(new_user_1)
 
         new_doctor_1 = Doctor(new_user_1.id)
@@ -131,6 +139,8 @@ class UserTestCase(unittest.TestCase):
         new_user_2 = User('宦怡',"22222222222", "123456")
         new_user_2.email = "huanyi@qq.com"
         new_user_2.phone = "22222222222"
+        new_user_2.imagePath = '/static/assets/image/doctor2.png'
+
         new_user_2.type = UserStatus.doctor
         User.save(new_user_2)
 
@@ -156,6 +166,8 @@ class UserTestCase(unittest.TestCase):
         new_user_3.email = "zhangjinsong@qq.com"
         new_user_3.phone = "33333333333"
         new_user_3.type = UserStatus.doctor
+        new_user_3.imagePath = '/static/assets/image/doctor3.png'
+
         User.save(new_user_3)
 
         new_doctor_3 = Doctor(new_user_3.id)
@@ -262,47 +274,110 @@ class UserTestCase(unittest.TestCase):
 
 
 
-    def test_addSuperUser(self):
-        user=User('zhoufan','13426026573','123456')
+    def test_addFenzhen(self):
+        user=User('fenzhen','13426026573','123456')
         user.sex=0
         user.status=0
         user.email='zhoufan@adobe.com'
         user.address='四川省 通江县'
         user.phone = '13426026573'
         user.type = UserStatus.doctor
-        user.name = "张西"
+        user.name = "分诊医生"
         User.save(user)
 
-
-        patient=Patient()
-        patient.gender=0
-        patient.Name='zf'
-        patient.status=0
-        patient.userID=user.id
-        Patient.save(patient)
-        new_userrole = UserRole(user.id, RoleId.Patient)
-        UserRole.save(new_userrole)
-
-        new_doctor_1 = Doctor(user.id)
-        new_doctor_1.identityPhone = "029-12345567"
-        new_doctor_1.username = "张西"
-        new_doctor_1.diagnoseCount = 10
-        new_doctor_1.feedbackCount = 5
-        new_doctor_1.goodFeedbackCount = 5
-        new_doctor_1.hospitalId = 1
-        new_doctor_1.departmentId = 1
-        new_doctor_1.title = "副主任医师"
-        new_doctor_1.status = 0
-
-
-        Doctor.save(new_doctor_1)
-        new_doctor2skill_1_1 = Doctor2Skill(new_doctor_1.id,1)
-        Doctor2Skill.save(new_doctor2skill_1_1)
-        new_userrole1 = UserRole(user.id, RoleId.Doctor)
-        UserRole.save(new_userrole1)
         new_userrole2 = UserRole(user.id, RoleId.Admin)
         UserRole.save(new_userrole2)
 
+    def test_addKefu(self):
+        user=User('kefu','77777777777','123456')
+        user.sex=0
+        user.status=0
+        user.email='zhoufan@adobe.com'
+        user.address='四川省 通江县'
+        user.phone = '77777777777'
+        user.type = UserStatus.doctor
+        user.name = "客服人员"
+        User.save(user)
+
+        new_userrole2 = UserRole(user.id, RoleId.Kefu)
+        UserRole.save(new_userrole2)
+
+import datetime
+class PayStatsTestCase(unittest.TestCase):
+    def testAddPayStats(self):
+        payStats = DiagnosePayStats()
+        payStats.id = 1
+        payStats.diagnoseId = 1
+        payStats.userId = 1
+        payStats.diagnoseId = 'SC000001'
+        payStats.finishDate = datetime.datetime.strptime('2014-10-19', '%Y-%m-%d')
+        payStats.money = 150
+        payStats.status = 0
+        DiagnosePayStats.save(payStats)
+
+        payStats = DiagnosePayStats()
+        payStats.id = 2
+        payStats.diagnoseId = 1
+        payStats.userId = 1
+        payStats.diagnoseId = 'SC000002'
+        payStats.finishDate = datetime.datetime.strptime('2014-11-07', '%Y-%m-%d')
+        payStats.money = 150
+        payStats.status = 0
+        DiagnosePayStats.save(payStats)
+
+        payStats = DiagnosePayStats()
+        payStats.id = 3
+        payStats.diagnoseId = 1
+        payStats.userId = 1
+        payStats.diagnoseId = 'SC000002'
+        payStats.finishDate = datetime.datetime.strptime('2014-10-19', '%Y-%m-%d')
+        payStats.money = 150
+        payStats.status = 2
+        DiagnosePayStats.save(payStats)
+
+        payStats = DiagnosePayStats()
+        payStats.id = 4
+        payStats.diagnoseId = 1
+        payStats.userId = 1
+        payStats.diagnoseId = 'SC000002'
+        payStats.finishDate = datetime.datetime.strptime('2014-10-19', '%Y-%m-%d')
+        payStats.money = 150
+        payStats.status = 3
+        DiagnosePayStats.save(payStats)
+
+        payStats = DiagnosePayStats()
+        payStats.id = 5
+        payStats.diagnoseId = 1
+        payStats.userId = 1
+        payStats.diagnoseId = 'SC000002'
+        payStats.finishDate = datetime.datetime.strptime('2014-10-19', '%Y-%m-%d')
+        payStats.money = 151
+        payStats.status = 2
+        DiagnosePayStats.save(payStats)
+
+class PayStatsGetTestCase(unittest.TestCase):
+    def testGetPayStats(self):
+        rs = DiagnosePayStats.getDetailPayStats(1, 0)
+        for row in rs:
+            print 'usable'
+            print row.id, row.finishDate
+            print 'finish usable'
+
+        rs = DiagnosePayStats.getDetailPayStats(1, 3)
+        for row in rs:
+            print 'payable'
+            print row.id, row.finishDate
+            print 'finish payable'
+
+        rs = DiagnosePayStats.getDetailPayStats(1, 2)
+        for row in rs:
+            print 'paid'
+            print row.id, row.finishDate
+            print 'paid'
+
+    def testGetSummary(self):
+        summary = DiagnosePayStats.getSummaryPayStats(1)
+        print summary[0], summary[1], summary[2], summary[3]
 
 
 

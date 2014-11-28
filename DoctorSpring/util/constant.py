@@ -8,7 +8,12 @@ class ModelStatus(object):
       Del=1
       Draft=9   #草稿
 
-
+class ConsultStatus(object):
+    Unread=0
+    Del=1
+    Read=2
+    PatientComments=3
+    DoctorComments=4
 
 class UserStatus(object):
     patent = 0  # 普通用户
@@ -32,6 +37,7 @@ class DiagnoseStatus(object):
     Diagnosed=6 #诊断完成
     NeedUpdate=7 #需要更新信息
     UnableDiagnose=8#无法诊断
+    HospitalUserDiagnoseNeedCommit = 10 #医院用户提交，但是还没有最终确认提交
     @staticmethod
     def getStatusName(status):
         if status==DiagnoseStatus.Draft:
@@ -50,6 +56,8 @@ class DiagnoseStatus(object):
             return '需要更新信息'
         if status==DiagnoseStatus.UnableDiagnose:
             return '无法诊断'
+        if status==DiagnoseStatus.HospitalUserDiagnoseNeedCommit:
+            return '待提交'
 
 class DiagnoseUploaed(object):
     NoUploaded=0
@@ -140,12 +148,12 @@ class UserFavoritesType(object):
 DefaultSystemAdminUserId=1
 
 class RoleId(object):
-    Admin=1
+    Admin=1   #fenzhen
     Doctor=2
     Patient=3
-    HospitalUser=4 #fenzhen
-    HospitalUserReal=5
-    Kefu=6
+    HospitalUser=4    #医院用户
+    HospitalUserReal=5  #废弃不用
+    Kefu=6             #客服
 class DiagnoseLogAction(object):
     NewDiagnoseAction='提出诊断申请'
     SendMessageToUser='为用户发送注册短信'
@@ -154,7 +162,9 @@ class DiagnoseLogAction(object):
     TriageDiagnoseAction='正在进行诊断'
     UpateDiagnoseAction='正在进行诊断'
     DiagnoseNeedUpateAction='暂停分发诊断(需要更多就诊人信息)'
+    DiagnoseNeedUpateRecommitAction='重新提交诊断申请(已经修改相应信息)'
     DiagnoseFinished='完成诊断'
+    DiagnoseRefund='诊断退款'
     CancleDiagnose='取消诊断'
 class AlipayLogAction(object):
     StartApplyAlipay='支付开始'
@@ -190,14 +200,29 @@ class DiagnoseMethod(object):
     Mri="mri"
     Ct="ct"
 class DiagnoseMethodCost(object):
-    Mri=0.2
-    Ct=0.4
+    Mri=0.02
+    Ct=0.04
 
 class MobileMessageConstant(object):
     UrlPrefix="http://www.ezhenduan.com/pay/"
     KefuPhone=40088888888
 
+class DiagnosePayStatsConstant(object):
+    Ongoing=0#待支付
+    Del=1#已删除
+    Paid=2#已支付
+    Payable=3#可支付
+    All=4#所有的支付信息
+    Paying=5#支付中
+    Refund=6#用户申请退款
 
+RollbackPeriod=7
+
+class DiagnosePayStatsLogConstant(object):
+    Del=1#已删除
+    ApplyPay=0#申请支付
+    FinishPay=2#支付完成
+    UserRefund=3#用户退款
 
 
 

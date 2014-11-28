@@ -49,11 +49,16 @@ def homepage():
         resultData['comments']=diagnoseCommentsDict
     else:
         resultData['comments']=None
+
+    resultData['ishomepage']=True
     if session.has_key('userId'):
         userId=session['userId']
         messageCount=Message.getMessageCountByReceiver(userId)
         resultData['messageCount']=messageCount
-    return render_template("home.html", result=resultData)
+        if UserRole.checkRole(db_session,userId,constant.RoleId.Patient):
+            resultData['isPatient'] = True
+
+    return render_template("home.html", data=resultData)
 
 @front.route('/applyDiagnose', methods=['GET', 'POST'])
 def applyDiagnose():
@@ -76,7 +81,9 @@ def applyDiagnose():
     locationsDict = object2dict.objects2dicts(locations)
     data['locations'] = locationsDict
 
-
+    #hospital user
+    if 'type' in request.args.keys():
+        data['type'] = int(request.args.get('type'))
     if 'edit' in request.args.keys() and 'diagnoseid' in request.args.keys():
         new_diagnose = Diagnose.getDiagnoseById(request.args['diagnoseid'])
         data['edit'] = 1
@@ -184,19 +191,22 @@ def applyDiagnoseForm(formid):
 
                 # Hospital User 注册用户
                 if form.isHospitalUser and (not form.exist) and needcreateNewUserByHospitalUser:
-
-                    passwd=random.sample('zyxwvutsrqponmlkjihgfedcba1234567890',6)
-                    passwd = ''.join(passwd)
-                    new_user = User(form.patientname,form.phonenumber, passwd, True)
-                    new_user.type = UserStatus.patent
-                    new_user.status = ModelStatus.Normal
-                    User.save(new_user)
-                    new_patient.userID = new_user.id
-                    Patient.save(new_patient)
-                    new_userrole = UserRole(new_user.id, RoleId.Patient)
-                    UserRole.save(new_userrole)
-                    sendRegisterMobileMessage(session.get('userId'),new_diagnose,new_user.phone,passwd)
-
+                    userQuery = User.getByPhone(form.phonenumber)
+                    if userQuery.count() <= 0:
+                        passwd=random.sample('zyxwvutsrqponmlkjihgfedcba1234567890',6)
+                        passwd = ''.join(passwd)
+                        new_user = User(form.patientname,form.phonenumber, passwd, True)
+                        new_user.type = UserStatus.patent
+                        new_user.status = ModelStatus.Normal
+                        User.save(new_user)
+                        new_patient.userID = new_user.id
+                        Patient.save(new_patient)
+                        new_userrole = UserRole(new_user.id, RoleId.Patient)
+                        UserRole.save(new_userrole)
+                        sendRegisterMobileMessage(session.get('userId'),new_diagnose,new_user.phone,passwd)
+                    else:
+                        new_patient.userID = userQuery.first().id
+                        Patient.save(new_patient)
                 form_result.data = {'formId': 3, }
             else:
                 form_result = ResultStatus(FAILURE.status, "找不到第一步草稿")
@@ -271,20 +281,33 @@ def applyDiagnoseForm(formid):
 
                     new_patient = Patient.get_patient_by_id(new_diagnose.patientId)
                     new_patient.status = PatientStatus.diagnose
-                    #hospitalUser type=1
-                    if form.type=='1' and not checkFilesExisting(new_diagnose):
-                        new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
+                    #add for need update scenario
+                    if new_diagnose.status == constant.DiagnoseStatus.NeedUpdate:
+                        new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.DiagnoseNeedUpateRecommitAction)
                         DiagnoseLog.save(db_session, new_diagnoselog)
-                    else:
-                        #产生alipay，发送短消息
-                        userId= session.get('userId')
-
-
-                        new_diagnose.ossUploaded=constant.DiagnoseUploaed.Uploaded
-                        new_diagnose.status = DiagnoseStatus.NeedPay
-
+                        new_diagnose.status = DiagnoseStatus.Triaging
                         Diagnose.save(new_diagnose)
-                        sendAllMessage(userId,new_diagnose)
+                    #hospitalUser type=1
+                    else:
+                        if form.type=='1' and not checkFilesExisting(new_diagnose):
+                            new_diagnoselog = DiagnoseLog(new_diagnose.uploadUserId, new_diagnose.id, DiagnoseLogAction.NewDiagnoseAction)
+                            DiagnoseLog.save(db_session, new_diagnoselog)
+                            #update by lichuan , save diagnose and change to needPay
+                            new_diagnose.status = DiagnoseStatus.HospitalUserDiagnoseNeedCommit
+                            Diagnose.save(new_diagnose)
+                            #end update
+                        else:
+                            #产生alipay，发送短消息
+                            userId= session.get('userId')
+
+
+                            new_diagnose.ossUploaded=constant.DiagnoseUploaed.Uploaded
+                            new_diagnose.status = DiagnoseStatus.NeedPay
+
+                            Diagnose.save(new_diagnose)
+                            sendAllMessage(userId,new_diagnose)
+
+
 
 
                 else:
@@ -419,8 +442,16 @@ def generateAliPay(userId,diagnoseId,diagnose=None):
         needPay=None
         if hasattr(diagnose,'pathology') and hasattr(diagnose.pathology,'pathologyPostions'):
             if len(diagnose.pathology.pathologyPostions)>0:
-                needPay=constant.DiagnoseCost*len(diagnose.pathology.pathologyPostions)
-        needPay=constant.DiagnoseCost
+                if diagnose.pathology.diagnoseMethod==constant.DiagnoseMethod.Mri:
+                    needPay=diagnose.getPayCount(constant.DiagnoseMethod.Mri,len(diagnose.pathology.pathologyPostions),diagnose.getUserDiscount(diagnose.patientId))
+                elif diagnose.pathology.diagnoseMethod==constant.DiagnoseMethod.Ct:
+                    needPay=diagnose.getPayCount(constant.DiagnoseMethod.Ct,len(diagnose.pathology.pathologyPostions),diagnose.getUserDiscount(diagnose.patientId))
+            else:
+                result=rs.ResultStatus(rs.FAILURE.status,"诊断不存在或这状态不对")
+                return  json.dumps(result.__dict__,ensure_ascii=False)
+        else:
+            result=rs.ResultStatus(rs.FAILURE.status,"诊断不存在或这状态不对")
+            return  json.dumps(result.__dict__,ensure_ascii=False)
 
         if hasattr(diagnose,'doctor') and hasattr(diagnose.doctor,'username'):
 
@@ -508,6 +539,8 @@ def disableFile():
             pathologyId=diagnose.pathologyId
             result=File.deleteFileByPathologyId(pathologyId,type)
             if result>0:
+                diagnose.ossUploaded = constant.DiagnoseUploaed.NoUploaded
+                Diagnose.save(diagnose)
                 return jsonify(rs.SUCCESS.__dict__, ensure_ascii=False)
         return jsonify(rs.FAILURE.__dict__, ensure_ascii=False)
 
@@ -682,7 +715,8 @@ def doctor_list():
     skills = Skill.getSkills()
     skillsDict = object2dict.objects2dicts(skills)
     result['skills'] = skillsDict
-    return render_template("doctorList.html", result=result)
+    result['isdoctorlist'] = True
+    return render_template("doctorList.html", data=result)
 
 
 @front.route('/patient/profile.json')
@@ -748,7 +782,9 @@ def userCenter(userId):
 
 @front.route('/help/center', methods=['GET', 'POST'])
 def helpCenterPage():
-    return render_template("helpcenter.html")
+    result = {}
+    result['ishelpcenter'] = True
+    return render_template("helpcenter.html",data=result)
 
 @front.route('/help/doc', methods=['GET', 'POST'])
 def helpDocPage():

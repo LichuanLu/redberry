@@ -46,7 +46,7 @@
            
             <!-- <div class="unlogin-group">
                 <a id="login-link" href="#" data-toggle="modal" data-target=".login-modal">
-                    <span>登陆</span>
+                    <span>登录</span>
                 </a>
                 <div class="bullet"></div>
                 <a id="register-link" href="#" data-toggle="modal" data-target=".register-modal">

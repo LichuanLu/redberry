@@ -206,12 +206,18 @@ def addConsult():
                 userId=dignose.patient.userID
         if form.source_id is None or form.source_id == u'':
             form.source_id=-1
+        if form.userId is not None and form.userId != u'':
+            userId = form.userId
         consult=Consult(userId,form.doctorId,form.title,form.content,form.parent_id,form.source_id,form.type,form.diagnose_id)
         Consult.save(consult)
         if form.source_id:
             sourceConsult=Consult.getById(form.source_id)
             if sourceConsult:
                 sourceConsult.count+=1
+                if (form.type == 0):
+                    sourceConsult.status = 3
+                else:
+                    sourceConsult.status = 4
                 Consult.update(consult)
 
 
@@ -237,7 +243,7 @@ def getConsultsByDoctor(doctorId):
 
 
         consutsDict=object2dict.objects2dicts(consuts)
-        dataChangeService.setConsultsResult(consutsDict)
+        dataChangeService.setConsultsResult(consutsDict, long(session["userId"]))
 
         resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,consutsDict)
         resultDict=resultStatus.__dict__
@@ -255,20 +261,32 @@ def getConsultsByUser(userId):
     if userId:
         consuts=None
         if sourceId:
-            consuts=Consult.getConsultsByUserId(userId,string.atoi(sourceId))
+            consuts=Consult.getConsultsByUserId(userId,status,string.atoi(sourceId))
         else:
-            consuts=Consult.getConsultsByUserId(userId)
+            consuts=Consult.getConsultsByUserId(userId, status)
         consutsDict=object2dict.objects2dicts(consuts)
-        dataChangeService.setConsultsResult(consutsDict)
+        dataChangeService.setConsultsResult(consutsDict, long(session["userId"]))
 
         resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,consutsDict)
         resultDict=resultStatus.__dict__
         return json.dumps(resultDict,ensure_ascii=False)
     return json.dumps(rs.PARAM_ERROR,ensure_ascii=False)
+
 @mc.route('/consut/<int:consultId>/read', methods = ['GET', 'POST'])
 def changeConsultRead(consultId):
+    consult = Consult.getConsultByConsultId(consultId)
+    userId = long(session["user_id"])
+    if consult.type == 0:
+        if consult.status == constant.ConsultStatus.DoctorComments:
+            Consult.changeReadStatus(consultId)
+            return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
+        if consult.userId == userId:
+            return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
+    if consult.type == 1:
+        if consult.status == constant.ConsultStatus.PatientComments:
+            Consult.changeReadStatus(consultId)
+            return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
+        if consult.doctorId == userId:
+            return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
     Consult.changeReadStatus(consultId)
     return json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
-
-
-

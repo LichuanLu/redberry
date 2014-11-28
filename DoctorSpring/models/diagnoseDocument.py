@@ -46,6 +46,7 @@ class Diagnose(Base):
     #adminId = sa.Column(sa.INTEGER,sa.ForeignKey('User.id'))
     #administrator = relationship("User", backref=backref('diagnose', order_by=id))
     adminId = sa.Column(sa.INTEGER)
+    money = sa.Column(sa.FLOAT)
 
     uploadUserId = sa.Column(sa.Integer, sa.ForeignKey('user.id'))
     uploadUser = relationship("User", backref=backref('diagnose', order_by=id))
@@ -75,7 +76,7 @@ class Diagnose(Base):
 
     def __init__(self,createdate=date.today()):
         self.createDate = createdate
-
+        # self.ossUploaded = ossUploaded
 
     @classmethod
     def save(cls, diagnose):
@@ -85,12 +86,15 @@ class Diagnose(Base):
             if diagnose.id:
                 diagnoseSeriesNumber='%s%i'%(constant.DiagnoseSeriesNumberPrefix,constant.DiagnoseSeriesNumberBase+diagnose.id)
                 diagnose.diagnoseSeriesNumber=diagnoseSeriesNumber
+                diagnose.money = cls.getPayCountByDiagnose(diagnose)
                 session.commit()
             session.flush()
+
     @classmethod
     def getDiagnoseById(cls,diagnoseId):
         if diagnoseId:
             return session.query(Diagnose).filter(Diagnose.id==diagnoseId,Diagnose.status!=DiagnoseStatus.Del).first()
+
     @classmethod
     def addAdminIdAndChangeStatus(cls,diagnoseId,adminId):
         if adminId is None:
@@ -126,7 +130,30 @@ class Diagnose(Base):
                 session.commit()
                 session.flush()
 
+    @classmethod
+    def getPayCountByDiagnose(cls,diagnose):
+        if diagnose is None:
+            return
+        if diagnose and hasattr(diagnose,'pathology') and diagnose.pathology and hasattr(diagnose.pathology,"pathologyPostions") \
+                and diagnose.pathology.pathologyPostions:
+            diagnoseMethod=diagnose.pathology.diagnoseMethod
+            count=len(diagnose.pathology.pathologyPostions)
+            return cls.getPayCount(diagnoseMethod,count,cls.getUserDiscount(diagnose.patientId))
+        return
 
+    @classmethod
+    def getPayCount(cls,method, count, discount=1):
+        if method == constant.DiagnoseMethod.Mri:
+            money=float(constant.DiagnoseMethodCost.Mri*count*discount)
+        elif method == constant.DiagnoseMethod.Ct:
+            money=float(constant.DiagnoseMethodCost.Ct*count*discount)
+        else:
+            money=float(0)
+        return money
+
+    @classmethod
+    def getUserDiscount(cls,patientId):
+        return 1
 
     @classmethod
     def getDiagnosesByDoctorId(cls,session,doctorId,pagger,status=None,startTime=SystemTimeLimiter.startTime,endTime=SystemTimeLimiter.endTime):
@@ -138,7 +165,10 @@ class Diagnose(Base):
                                                       Diagnose.createDate>startTime,Diagnose.createDate<endTime)\
                     .offset(pagger.getOffset()).limit(pagger.getLimitCount()).all()
             else:
-                return session.query(Diagnose).filter(Diagnose.doctorId==doctorId,Diagnose.status!=DiagnoseStatus.Del,
+
+
+
+                return session.query(Diagnose).filter(Diagnose.doctorId==doctorId,Diagnose.status.notin_((DiagnoseStatus.Del,DiagnoseStatus.Draft)),
                                                       Diagnose.createDate>startTime,Diagnose.createDate<endTime) \
                     .offset(pagger.getOffset()).limit(pagger.getLimitCount()).all()
     @classmethod
@@ -237,12 +267,20 @@ class Diagnose(Base):
         if uploadUserId is None :
             return
         if patientName is None or patientName == u'':
+            # query=session.query(Diagnose)\
+            #     .filter(Diagnose.uploadUserId==uploadUserId,Diagnose.ossUploaded == constant.DiagnoseUploaed.NoUploaded,Diagnose.status.in_((DiagnoseStatus.NeedPay,DiagnoseStatus.NeedUpdate))).offset(pagger.getOffset()).limit(pagger.getLimitCount())
+            # query=query.union_all(session.query(Diagnose) \
+            #     .filter(Diagnose.uploadUserId==uploadUserId,Diagnose.ossUploaded == None,Diagnose.status.in_((DiagnoseStatus.NeedPay,DiagnoseStatus.NeedUpdate))).offset(pagger.getOffset()).limit(pagger.getLimitCount()))
             query=session.query(Diagnose)\
-                .filter(Diagnose.uploadUserId==uploadUserId,Diagnose.status.in_((DiagnoseStatus.Draft,DiagnoseStatus.NeedUpdate))).offset(pagger.getOffset()).limit(pagger.getLimitCount())
-        else:
-            query=session.query(Diagnose).select_from(join(Patient,Diagnose,Patient.id==Diagnose.patientId)) \
-                .filter(Patient.realname==patientName,Diagnose.status.in_((DiagnoseStatus.Draft,DiagnoseStatus.NeedUpdate)),Diagnose.uploadUserId==uploadUserId).offset(pagger.getOffset()).limit(pagger.getLimitCount())
+                .filter(Diagnose.uploadUserId==uploadUserId,Diagnose.status.in_((DiagnoseStatus.HospitalUserDiagnoseNeedCommit,DiagnoseStatus.NeedUpdate))).offset(pagger.getOffset()).limit(pagger.getLimitCount())
 
+        else:
+        #     query=session.query(Diagnose).select_from(join(Patient,Diagnose,Patient.id==Diagnose.patientId)) \
+        #         .filter(Patient.realname==patientName,Diagnose.ossUploaded == constant.DiagnoseUploaed.NoUploaded,Diagnose.status.in_((DiagnoseStatus.NeedPay,DiagnoseStatus.NeedUpdate)),Diagnose.uploadUserId==uploadUserId).offset(pagger.getOffset()).limit(pagger.getLimitCount())
+        #     query=query.union_all(session.query(Diagnose).select_from(join(Patient,Diagnose,Patient.id==Diagnose.patientId)) \
+        #         .filter(Patient.realname==patientName,Diagnose.ossUploaded == None,Diagnose.status.in_((DiagnoseStatus.NeedPay,DiagnoseStatus.NeedUpdate)),Diagnose.uploadUserId==uploadUserId).offset(pagger.getOffset()).limit(pagger.getLimitCount()))
+             query=session.query(Diagnose).select_from(join(Patient,Diagnose,Patient.id==Diagnose.patientId)) \
+                 .filter(Patient.realname==patientName,Diagnose.status.in_((DiagnoseStatus.HospitalUserDiagnoseNeedCommit,DiagnoseStatus.NeedUpdate)),Diagnose.uploadUserId==uploadUserId).offset(pagger.getOffset()).limit(pagger.getLimitCount())
         return query.all()
 
     @classmethod
@@ -286,7 +324,7 @@ class Diagnose(Base):
         if status==-1:
             query=query.filter(Diagnose.status.notin_((DiagnoseStatus.Diagnosed,DiagnoseStatus.Del)))
 
-        elif status is None:
+        elif status is None or status == u'':
             query=query.filter(Diagnose.status!=DiagnoseStatus.Del)
         else:
             query=query.filter(Diagnose.status==DiagnoseStatus.Diagnosed)
@@ -504,6 +542,39 @@ class Report(Base):
             session.commit()
         return report
 
+
+class ReportDiagnoseRelation(Base):
+    __tablename__ = 'report_diagnose_relation'
+    __table_args__ = {
+        'mysql_charset': 'utf8',
+        'mysql_engine': 'MyISAM',
+        }
+    id = sa.Column(sa.Integer, primary_key = True, autoincrement = True)
+
+    reportId = sa.Column(sa.Integer, sa.ForeignKey('report.id'))
+    report = relationship("Report", backref=backref('reportDiagnoseRelation', order_by=id))
+
+    diagnoseId = sa.Column(sa.Integer, sa.ForeignKey('diagnose.id'))
+    diagnose = relationship("Diagnose", backref=backref('reportDiagnoseRelation', order_by=id))
+
+    status=sa.Column(sa.Integer)
+
+    def __init__(self,reportId=None,diagnoseId=None,status=ModelStatus.Normal):
+        self.reportId = reportId
+        self.diagnoseId = diagnoseId
+
+        if status:
+            self.status = status
+        else:
+            self.status = ModelStatus.Normal
+
+    @classmethod
+    def save(cls,reportDiagnoseRelation):
+        if reportDiagnoseRelation:
+            session.add(reportDiagnoseRelation)
+            session.commit()
+            session.flush()
+
 class File(Base):
     __tablename__ = 'file'
     __table_args__ = {
@@ -561,15 +632,22 @@ class File(Base):
 
             return query.count()
 
+    #type != NONE 使用新方法，返回更多数据，默认返回一个FILE URL
     @classmethod
-    def getDicomFileUrl(cls,pathologyId):
+    def getDicomFileUrl(cls,pathologyId,type=None):
         if pathologyId:
-            return session.query(File.url).filter(File.pathologyId==pathologyId,File.type==constant.FileType.Dicom,File.status==ModelStatus.Normal).first()
+            if type:
+                return session.query(File.url,File.name,File.size,File.id).filter(File.pathologyId==pathologyId,File.type==constant.FileType.Dicom,File.status==ModelStatus.Normal).first()
+            else:
+                return session.query(File.url).filter(File.pathologyId==pathologyId,File.type==constant.FileType.Dicom,File.status==ModelStatus.Normal).first()
 
     @classmethod
-    def getFilesUrl(cls,pathologyId):
+    def getFilesUrl(cls,pathologyId,type=None):
         if pathologyId:
-            return session.query(File.url).filter(File.pathologyId==pathologyId,File.type==constant.FileType.FileAboutDiagnose,File.status==ModelStatus.Normal).all()
+            if type:
+                return session.query(File.url,File.name,File.size,File.id).filter(File.pathologyId==pathologyId,File.type==constant.FileType.FileAboutDiagnose,File.status==ModelStatus.Normal).all()
+            else:
+                return session.query(File.url).filter(File.pathologyId==pathologyId,File.type==constant.FileType.FileAboutDiagnose,File.status==ModelStatus.Normal).all()
 
 
     @classmethod
@@ -579,6 +657,17 @@ class File(Base):
             for file in files:
                 if not unicode(file.id) in fileIds:
                         file.status = ModelStatus.Del
+                        File.save(file)
+
+    @classmethod
+    def cleanAllDirtyFile(cls, fileIds, pathologyId):
+        if fileIds is not None and len(fileIds) > 0 and pathologyId:
+            files = File.getFilebypathologyId(pathologyId)
+            for file in files:
+                if not unicode(file.id) in fileIds:
+                    file.status = ModelStatus.Del
+                    File.save(file)
+
     @classmethod
     def deleteFileByPathologyId(cls,pathologyId,type=constant.FileType.Dicom):
         if pathologyId is None or pathologyId<1:

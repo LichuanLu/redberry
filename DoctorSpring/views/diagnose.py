@@ -8,7 +8,7 @@ from forms import LoginForm ,CommentsForm ,ReportForm,AlipayCallBackInfo
 from DoctorSpring import lm
 from database import  db_session
 from sqlalchemy.exc import IntegrityError
-from DoctorSpring.models import User,Patient,Doctor,Diagnose ,DiagnoseTemplate,Report,UserRole
+from DoctorSpring.models import User,Patient,Doctor,Diagnose ,DiagnoseTemplate,Report,UserRole, ReportDiagnoseRelation
 from DoctorSpring.models import User,Comment,Message,DiagnoseLog ,AlipayLog,AlipayChargeRecord
 from DoctorSpring.util import result_status as rs,object2dict ,constant,pdf_utils
 from DoctorSpring.util.authenticated import authenticated
@@ -100,6 +100,11 @@ def addOrUpdateReport():
 
             diagnose.reportId=report.id
             Diagnose.save(diagnose)
+
+            #add report and diagnose to relation table
+            reportDiagnoseRelation = ReportDiagnoseRelation(report.id,diagnose.id)
+            ReportDiagnoseRelation.save(reportDiagnoseRelation)
+
         #flash('成功添加诊断评论')
         if form.status and form.status == constant.ReportStatus.Commited:
             diagnose=Diagnose.getDiagnoseById(form.diagnoseId)
@@ -107,7 +112,19 @@ def addOrUpdateReport():
                 Diagnose.changeDiagnoseStatus(diagnose.id,constant.DiagnoseStatus.NeedDiagnose)
             if form.reportId is None and report:
                 form.reportId = report.id
-            Report.update(form.reportId,constant.ReportType.Doctor,status=constant.ReportStatus.Draft)
+            #copy a report and add to relation table
+            newReport = Report(form.techDesc,form.imageDesc,form.diagnoseDesc,form.fileUrl,ReportType.Doctor,constant.ReportStatus.Draft)
+            Report.save(newReport)
+
+
+            reportDiagnoseRelation = ReportDiagnoseRelation(newReport.id,diagnose.id)
+            ReportDiagnoseRelation.save(reportDiagnoseRelation)
+
+            diagnose.reportId=newReport.id
+            Diagnose.save(diagnose)
+            #end copy
+
+
             if diagnose and hasattr(diagnose,'doctor'):
                 doctor=diagnose.doctor
                 if doctor and doctor.userId:
@@ -340,8 +357,16 @@ def generateAlipayUrl(diagnoseId):
         needPay=None
         if hasattr(diagnose,'pathology') and hasattr(diagnose.pathology,'pathologyPostions'):
             if len(diagnose.pathology.pathologyPostions)>0:
-                needPay=constant.DiagnoseCost*len(diagnose.pathology.pathologyPostions)
-        needPay=constant.DiagnoseCost
+                if diagnose.pathology.diagnoseMethod==constant.DiagnoseMethod.Mri:
+                    needPay=diagnose.getPayCount(constant.DiagnoseMethod.Mri,len(diagnose.pathology.pathologyPostions),diagnose.getUserDiscount(diagnose.patientId))
+                elif diagnose.pathology.diagnoseMethod==constant.DiagnoseMethod.Ct:
+                    needPay=diagnose.getPayCount(constant.DiagnoseMethod.Ct,len(diagnose.pathology.pathologyPostions),diagnose.getUserDiscount(diagnose.patientId))
+            else:
+                result=rs.ResultStatus(rs.FAILURE.status,"诊断不存在或这状态不对")
+                return  json.dumps(result.__dict__,ensure_ascii=False)
+        else:
+            result=rs.ResultStatus(rs.FAILURE.status,"诊断不存在或这状态不对")
+            return  json.dumps(result.__dict__,ensure_ascii=False)
 
         if hasattr(diagnose,'doctor') and hasattr(diagnose.doctor,'username'):
 
@@ -483,10 +508,11 @@ def changeDiagnoseStatus(diagnoseId):
 @diagnoseView.route('/diagnose/<int:diagnoseId>/toNeedPay', methods = ['GET', 'POST'])
 def changeDiagnoseToNeedPay(diagnoseId):
     try:
-
         loginUserId=session.get('userId')
         if loginUserId is None:
             return
+
+        fileIds = request.form.getlist('fileIds')
 
         loginUserId=string.atoi(loginUserId)
         diagnose=Diagnose.getDiagnoseById(diagnoseId)
@@ -494,12 +520,30 @@ def changeDiagnoseToNeedPay(diagnoseId):
             return
         userID=diagnose.patient.userID
         if userID==loginUserId or diagnose.uploadUserId==loginUserId:
-            diagnose=Diagnose()
-            diagnose.id=diagnoseId
-            diagnose.status= constant.DiagnoseStatus.NeedPay
-            Diagnose.update(diagnose)
-            from DoctorSpring.views.front import sendAllMessage
-            sendAllMessage(userID,diagnose)
+            # diagnose=Diagnose()
+            # diagnose.id=diagnoseId
+            #update by lichuan
+            # diagnose.status= constant.DiagnoseStatus.NeedPay
+            # Diagnose.update(diagnose)
+            from DoctorSpring.views.front import sendAllMessage,checkFilesExisting
+            from DoctorSpring.models.diagnoseDocument import File
+            if(checkFilesExisting(diagnose)):
+
+
+
+                newDiagnose= Diagnose()
+                newDiagnose.id=diagnoseId
+                newDiagnose.status= constant.DiagnoseStatus.NeedPay
+                Diagnose.update(newDiagnose)
+                #清除以前的无用文件
+                pathologyId = diagnose.pathologyId
+                File.cleanAllDirtyFile(fileIds, pathologyId)
+                sendAllMessage(userID,diagnose)
+            else:
+                return json.dumps(rs.FAILURE.__dict__,"需要上传DICOM文件和诊断文件")
+
+            #end update
+
     except Exception,e:
         LOG.error(e.message)
         return json.dumps(rs.FAILURE.__dict__,ensure_ascii=False)
