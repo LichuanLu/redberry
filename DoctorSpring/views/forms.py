@@ -406,6 +406,17 @@ class UserChangePasswdForm(object) :
             return ResultStatus(FAILURE.status,"输入的密码长度必须大于6小于50")
         return SUCCESS
 
+#Used for forgetPwd feature
+class UserResetPasswdForm(object) :
+    userId = None
+    newPasswd = None
+    def __init__(self,form):
+        self.newPasswd=form.get('newPasswd')
+    def validate(self):
+
+        if self.newPasswd is None or len(self.newPasswd)<8:
+            return ResultStatus(FAILURE.status,"输入的密码长度必须大于6小于50")
+        return SUCCESS
 
 class RegisterFormDoctor(object):
     email = None

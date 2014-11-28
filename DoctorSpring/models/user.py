@@ -140,6 +140,19 @@ class User(Base):
             return session.query(User).filter(User.phone == user_name, User.status == ModelStatus.Normal).first()
 
 
+    @classmethod
+    def get_id_by_phone(cls, mobileNumber):
+        return session.query(User.id).filter(User.phone == mobileNumber).first()
+
+    @classmethod
+    def is_existing_phone(cls, mobileNumber):
+        if session.query(User.id).filter(User.phone == mobileNumber).first() is None:
+            return False
+        else:
+            return True
+
+
+
 class UserRole(Base):
     __tablename__ = 'user_role'
     __table_args__ = {
