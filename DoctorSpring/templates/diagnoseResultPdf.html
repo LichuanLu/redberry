@@ -1,67 +1,104 @@
 <html>
 <head>
-   <style>
-    @font-face {
-    font-family: msyh;
-    src: url(/static/font/msyh.ttf);
-    }
-    body{
-        font-family: msyh;
-    }
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", "宋体", Arial, Verdana, sans-serif;
+            font-size: 14px;
+            background-color: #ffffff;
+        }
+        .image-container{
+            position: relative;
+            overflow: hidden;
+        }
 
+        .image-container:before {
+            content: ' ';
+            display: block;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            width:100%;
+            height:100%;
+            z-index: 1;
+            opacity: 0.1;
+            background-image: url('../assets/image/logo.jpg');
+            background-repeat: no-repeat;
+            background-position: 50% 0;
+            -ms-background-size: cover;
+            -o-background-size: cover;
+            -moz-background-size: cover;
+            -webkit-background-size: cover;
+            background-size: cover;
+            background-size: 100% 100%;
+            -webkit-transform: rotate(45deg);
+            -moz-transform: rotate(45deg);
+            -o-transform: rotate(45deg);
+            -ms-transform: rotate(45deg);
+            transform: rotate(45deg);
+        }
     </style>
 </head>
 <body>
 {% block body %}
-<div width="100%" style="text-align:center;">
-<h2 style="font-size:20pt;font-weight: 700">检查报告单</h2>
+<div class="image-container" style="margin-top: 2em;">
+    <div width="100%" style="text-align:center;">
+        <h2 style="font-size:20pt;font-weight: 700">易诊断网络会诊意见书</h2>
+        <p>全国最专业远程影像网络协诊网 www.ezhenduan.com </p>
+    </div>
+    <div width="100%" style="padding-left: 10%;padding-right: 10%;">
+       <h4 style="display: inline-block;">申请单号：{{data.createDate}}</h4>
+       <h4 style="display: inline-block; float: right;">意见书唯一编号：{{data.seriesNumber}}</h4>
+    </div>
+    <hr/>
+    <hr style="margin: 1em 0;"/>
+
+    <div width="100%" style="text-align: center;font-weight: 700;">
+        <span style="display: inline-block; width: 30%;">姓名：{{data.name}}
+        </span>
+        <span style="display: inline-block;width: 30%;">
+            性别：
+            {%if data.gender==0 %}
+            男
+            {% else %}
+            女
+            {% endif %}
+        </span>
+        <span style="display: inline-block;width: 30%;">年龄：{{data.birthDate}}</span>
+    </div>
+    <hr style="margin: 1em 0;"/>
+    <div width="100%" style="margin-top: 2em; padding-left: 10%;padding-right: 10%;">
+        <h4>部位：{{data.postions}}</h4>
+        <h4>检查技术描述：</h4>
+        <p width="100%" style="margin-left:2em;margin-bottom: 1em;word-wrap:CJK;">
+            {{data.techDesc}}
+        </p>
+        <h4>影像描述：</h4>
+         <p width="100%" style="margin-left:2em;margin-bottom: 1em;word-wrap:CJK;">
+             {{data.imageDesc}}
+         </p>
+        <h4>诊断意见：</h4>
+        <P width="100%" style="margin-left:2em;margin-bottom: 1em;word-wrap:CJK;">
+        {{data.diagnoseDesc}}
+        </p>
+
+    </div>
+    <div width="100%" style="margin-top: 3em; padding-left: 10%;padding-right: 10%; text-align: center;">
+        <span style="display: inline-block; width: 30%;"></span>
+        <span style="display: inline-block; width: 30%;">报告医师：{{data.adminName}}</span>
+        <span style="display: inline-block; width: 30%;">审核教授：{{data.doctorName}}</span>
+        <p style="padding-right: 10%;text-align: right;">审核日期：{{data.createDate}}</p>
+    </div>
+
+
+    <hr style="margin-top: 3em;"/>
+    <hr style="margin: 1em 0;"/>
+    <p width="100%" style="padding-left: 10%;">本报告所述为上传影像资料信息，仅供临床医师参考！  本报告解释权归易诊断网站所有。</p>
 </div>
-<div width="100%" style="text-align: right;">
-   <h4>诊断日期：{{data.createDate}}</h4>
-   <h4>影像号：{{data.seriesNumber}}</h4>
+<div style="padding-left: 10%;">
+    <img style="padding-left: 15px;" src="../assets/image/wechatcode.png">
+    <p>易诊断微信公众号</p>
 </div>
-
-
-<hr style="margin: 1em 0;"/>
-<div width="100%">
-    <span style="margin-right: 5em">{{data.name}}
-    </span>
-    <span style="margin-right: 5em">
-        {%if data.gender==0 %}
-        男
-        {% else %}
-        女
-        {% endif %}
-    </span>
-    <span style="margin-right: 5em">{{data.birthDate}}</span>
-</div>
-<hr style="margin: 1em 0;"/>
-<h4>部位：{{data.postions}}</h4>
-<div width="100%" style="margin-top: 2em;">
-    <h4>影像描述：</h4>
-     <p width="100%" style="margin-left:2em;margin-bottom: 1em;word-wrap:CJK;">
-         {{data.imageDesc}}
-     </p>
-    <h4>诊断意见：</h4>
-    <P width="100%" style="margin-left:2em;margin-bottom: 1em;word-wrap:CJK;">
-    {{data.diagnoseDesc}}
-    </p>
-
-</div>
-<table width="100%" cellpadding="4" cellspacing="0" style="margin-top: 2em;">
-
-    <tbody>
-    <tr>
-        <td width="50%">
-            <h3 style="text-align: center;">诊断医师：{{data.doctorName}}</h3>
-        </td>
-
-    </tr>
-    </tbody>
-</table>
-
-
-<hr style="margin: 3em 0;"/>
 {% endblock %}
 </body>
 </html>

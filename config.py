@@ -34,6 +34,9 @@ MAX_CONTENT_LENGTH = 256 * 1024 * 1024
 DEFAULT_IMAGE = '/static/assets/image/young-m.png'
 DEFAULT_TITLE = '待定'
 
+#command
+WKHTMLTOPDF_COMMAND = '/usr/local/bin/wkhtmltopdf'
+
 class rec:
     pass
 

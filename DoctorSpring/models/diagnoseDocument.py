@@ -574,6 +574,11 @@ class ReportDiagnoseRelation(Base):
             session.commit()
             session.flush()
 
+    @classmethod
+    def getReportsByDiagnoseId(cls,diagnoseId):
+        if diagnoseId:
+            return session.query(ReportDiagnoseRelation).filter(ReportDiagnoseRelation.diagnoseId==diagnoseId,ReportDiagnoseRelation.status == ModelStatus.Normal).all()
+
 class File(Base):
     __tablename__ = 'file'
     __table_args__ = {

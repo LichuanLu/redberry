@@ -166,13 +166,16 @@ def updateReport():
         # login and validate the user...
         if form.status and form.status==constant.ReportStatus.Commited:
 
-            fileUrl=pdf_utils.generatorPdf(form.diagnoseId, identityPhone)#需要先生存文檔上傳到服務器，獲取url
-            report=Report.update(form.reportId,constant.ReportType.Doctor,form.status,fileUrl,form.techDesc,form.imageDesc,form.diagnoseDesc)
-            Diagnose.changeDiagnoseStatus(form.diagnoseId,constant.DiagnoseStatus.Diagnosed)
-            #需要給用戶發信和記錄操作日誌
-            diagnose=Diagnose.getDiagnoseById(form.diagnoseId)
-            sendMessageAndRecordLog(diagnose,userId)
-
+            # fileUrl=pdf_utils.generatorPdf(form.diagnoseId, identityPhone)#需要先生存文檔上傳到服務器，獲取url
+            fileUrl=pdf_utils.generatorHtml(form.diagnoseId, identityPhone)
+            if fileUrl:
+                report=Report.update(form.reportId,constant.ReportType.Doctor,form.status,fileUrl,form.techDesc,form.imageDesc,form.diagnoseDesc)
+                Diagnose.changeDiagnoseStatus(form.diagnoseId,constant.DiagnoseStatus.Diagnosed)
+                #需要給用戶發信和記錄操作日誌
+                diagnose=Diagnose.getDiagnoseById(form.diagnoseId)
+                sendMessageAndRecordLog(diagnose,userId)
+            else:
+                return json.dumps(rs.FAILURE.__dict__,ensure_ascii=False)
         else:
             fileUrl=None#這是草稿，不需要生存文檔
 
@@ -287,7 +290,7 @@ def rollbackDiagnose(diagnoseId):
     diagnose=Diagnose.getDiagnoseById(diagnoseId)
     if diagnose is None:
         return  json.dumps(rs.NO_DATA.__dict__,ensure_ascii=False)
-    if hasattr(diagnose,'adminId') and diagnose.adminId and  diagnose.adminId==userId:
+    if (hasattr(diagnose,'adminId') and diagnose.adminId and  diagnose.adminId==userId) or (hasattr(diagnose,'doctorId') and diagnose.doctorId and  diagnose.doctor.userId == userId):
         if status is None:
             status=constant.DiagnoseStatus.Draft
         diagnose.status=status
@@ -304,9 +307,19 @@ def rollbackDiagnose(diagnoseId):
             message=Message(constant.DefaultSystemAdminUserId,diagnose.patient.userID,'诊断通知',content,constant.MessageType.Diagnose)
             Message.save(message)
 
+        if(hasattr(diagnose,'doctorId') and diagnose.doctorId and  diagnose.doctor.userId == userId):
+            reportDiagnoseRelations = ReportDiagnoseRelation.getReportsByDiagnoseId(diagnose.id)
+            for reportDiagnoseRelation in reportDiagnoseRelations:
+                if reportDiagnoseRelation.report.status == constant.ReportType.Doctor:
+                    print 'doctor rollback'
+                elif reportDiagnoseRelation.report.status == constant.ReportType.Admin:
+                    print 'admin rollback'
+
         return  json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
     else:
         return  json.dumps(rs.PERMISSION_DENY.__dict__,ensure_ascii=False)
+
+
 
 
 @diagnoseView.route('/diagnose/evaluate/<int:diagnoseId>',  methods = ['GET', 'POST'])
@@ -431,7 +444,6 @@ def AlipayCallbackUrl():
     return  json.dumps(result.__dict__,ensure_ascii=False)
 @diagnoseView.route('/diagnose/diagnoseLog',  methods = ['GET', 'POST'])
 def getDiagnoseLog():
-    userId='9'
     if session.has_key('userId'):
         userId=session['userId']
     if userId is None:
@@ -446,7 +458,6 @@ def getDiagnoseLog():
 
 @diagnoseView.route('/diagnose/diagnoseLog/<int:diagnoseId>',  methods = ['GET', 'POST'])
 def getDiagnoseLogBydiagnoseId(diagnoseId):
-    userId='9'
     if session.has_key('userId'):
         userId=session['userId']
     if userId is None:
