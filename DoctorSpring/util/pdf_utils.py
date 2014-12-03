@@ -16,7 +16,7 @@ from flask import abort, render_template, flash
 
 from PyPDF2 import PdfFileWriter, PdfFileReader
 from helper import timeout_command
-
+from datetime import datetime
 
 import random
 import string
@@ -123,6 +123,8 @@ def generatorHtml(diagnoseId, identityPhone):
             data['diagnoseDesc']=report.diagnoseDesc
             data['seriesNumber']=report.seriesNumber
             data['fileUrl']=report.fileUrl
+            if hasattr(diagnose,'diagnoseSeriesNumber'):
+                data['diagnoseSN'] = diagnose.diagnoseSeriesNumber
             createDate=report.createDate
             if createDate:
                 createDate=createDate.strftime('%Y-%m-%d')
@@ -136,7 +138,7 @@ def generatorHtml(diagnoseId, identityPhone):
                 birthDate=diagnose.patient.birthDate
                 if birthDate:
                     birthDate=birthDate.strftime('%Y-%m-%d')
-                    data['birthDate']=birthDate
+                    data['birthDate']=getAge(birthDate)
                 data['name']=diagnose.patient.realname
             if hasattr(diagnose,'doctor'):
                 data['doctorName']=diagnose.doctor.username
@@ -179,6 +181,17 @@ def generatorHtml(diagnoseId, identityPhone):
             else:
                 return None
     return None
+
+def getAge(birthDay):
+    today = datetime.date.today()
+    try:
+        birthday = birthDay.replace(year=today.year)
+    except ValueError: # raised when birth date is February 29 and the current year is not a leap year
+        birthday = birthDay.replace(year=today.year, day=birthDay.day-1)
+    if birthday > today:
+        return today.year - birthDay.year - 1
+    else:
+        return today.year - birthDay.year
 
 def generate_pdf_from_html(fileLink,pdfLink):
     commands = [config.WKHTMLTOPDF_COMMAND1,config.WKHTMLTOPDF_COMMAND2,config.WKHTMLTOPDF_COMMAND3,config.WKHTMLTOPDF_COMMAND4,fileLink,pdfLink]
