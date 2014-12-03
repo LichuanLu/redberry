@@ -37,6 +37,9 @@ DEFAULT_TITLE = '待定'
 #command
 WKHTMLTOPDF_COMMAND = '/usr/local/bin/wkhtmltopdf'
 
+#cdn
+AVATAR_PREFIX = 'http://static.ezhenduan.com/static/'
+
 class rec:
     pass
 

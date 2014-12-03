@@ -354,6 +354,8 @@ class Diagnose(Base):
             diagnoseNeedChange.supportStaffCall=diagnose.supportStaffCall
         if diagnose.uploadUserId :
             diagnoseNeedChange.uploadUserId=diagnose.uploadUserId
+        if diagnose.reportId :
+            diagnoseNeedChange.reportId=diagnose.reportId
         if diagnose.alipayUrl:
             diagnoseNeedChange.alipayUrl=diagnose.alipayUrl
         if diagnose.alipayHashCode:
@@ -574,6 +576,20 @@ class ReportDiagnoseRelation(Base):
             session.add(reportDiagnoseRelation)
             session.commit()
             session.flush()
+
+    @classmethod
+    def update(cls,reportDiagnoseRelationId,status=None):
+        if reportDiagnoseRelationId is None:
+            return
+        reportDiagnoseRelation = session.query(ReportDiagnoseRelation).filter(ReportDiagnoseRelation.id==reportDiagnoseRelationId).first()
+        if reportDiagnoseRelation:
+            if status or status==0:
+                reportDiagnoseRelation.status=status
+
+
+            session.flush()
+            session.commit()
+        return reportDiagnoseRelation
 
     @classmethod
     def getReportsByDiagnoseId(cls,diagnoseId):

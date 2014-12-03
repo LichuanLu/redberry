@@ -12,7 +12,7 @@ from DoctorSpring.models import User,Patient,Doctor,Diagnose ,DiagnoseTemplate,R
 from DoctorSpring.models import User,Comment,Message,DiagnoseLog ,AlipayLog,AlipayChargeRecord
 from DoctorSpring.util import result_status as rs,object2dict ,constant,pdf_utils
 from DoctorSpring.util.authenticated import authenticated
-from DoctorSpring.util.constant import MessageUserType,Pagger, ReportType
+from DoctorSpring.util.constant import MessageUserType,Pagger, ReportType,DiagnoseLogAction
 from DoctorSpring.util.pay import alipay
 import string
 from config import LOGIN_URL,ERROR_URL
@@ -310,10 +310,23 @@ def rollbackDiagnose(diagnoseId):
         if(hasattr(diagnose,'doctorId') and diagnose.doctorId and  diagnose.doctor.userId == userId):
             reportDiagnoseRelations = ReportDiagnoseRelation.getReportsByDiagnoseId(diagnose.id)
             for reportDiagnoseRelation in reportDiagnoseRelations:
-                if reportDiagnoseRelation.report.status == constant.ReportType.Doctor:
-                    print 'doctor rollback'
-                elif reportDiagnoseRelation.report.status == constant.ReportType.Admin:
-                    print 'admin rollback'
+                if reportDiagnoseRelation.report.status != constant.ReportStatus.Del:
+                    if reportDiagnoseRelation.report.type == constant.ReportType.Doctor:
+                        print 'doctor report'
+                        #delete doctor report if exist
+                        # reportDiagnoseRelation.report.status = constant.ModelStatus.Del
+                        Report.update(reportDiagnoseRelation.report.id,status=constant.ReportStatus.Del)
+                        ReportDiagnoseRelation.update(reportDiagnoseRelation.id,status=constant.ModelStatus.Del)
+                    elif reportDiagnoseRelation.report.type == constant.ReportType.Admin:
+                        print 'admin report'
+                        #set diagnose report to admin report
+
+                        diagnose.reportId = reportDiagnoseRelation.report.id
+                        Diagnose.update(diagnose)
+
+
+
+
 
         return  json.dumps(rs.SUCCESS.__dict__,ensure_ascii=False)
     else:
@@ -539,17 +552,24 @@ def changeDiagnoseToNeedPay(diagnoseId):
             from DoctorSpring.views.front import sendAllMessage,checkFilesExisting
             from DoctorSpring.models.diagnoseDocument import File
             if(checkFilesExisting(diagnose)):
+                # newDiagnose= Diagnose()
+                # newDiagnose.id=diagnoseId
+                if diagnose.status == constant.DiagnoseStatus.NeedUpdate:
+                    new_diagnoselog = DiagnoseLog(diagnose.uploadUserId, diagnose.id, DiagnoseLogAction.DiagnoseNeedUpateRecommitAction)
+                    DiagnoseLog.save(db_session, new_diagnoselog)
+                    diagnose.status = constant.DiagnoseStatus.Triaging
+                    Diagnose.update(diagnose)
+                    pathologyId = diagnose.pathologyId
+                    File.cleanAllDirtyFile(fileIds, pathologyId)
+                else:
+                    diagnose.status = constant.DiagnoseStatus.NeedPay
+                    Diagnose.update(diagnose)
+                    #清除以前的无用文件
+                    pathologyId = diagnose.pathologyId
+                    File.cleanAllDirtyFile(fileIds, pathologyId)
+                    sendAllMessage(userID,diagnose)
 
 
-
-                newDiagnose= Diagnose()
-                newDiagnose.id=diagnoseId
-                newDiagnose.status= constant.DiagnoseStatus.NeedPay
-                Diagnose.update(newDiagnose)
-                #清除以前的无用文件
-                pathologyId = diagnose.pathologyId
-                File.cleanAllDirtyFile(fileIds, pathologyId)
-                sendAllMessage(userID,diagnose)
             else:
                 return json.dumps(rs.FAILURE.__dict__,"需要上传DICOM文件和诊断文件")
 

@@ -288,6 +288,7 @@ def getDiagnoseDetailInfoByPatient(session,diagnose):
     diagDict['isFeedback']=str(isFeedback)
 
     return diagDict
+
 def getDiagnoseLogsDict(diagnoseLogs):
     if diagnoseLogs is None or len(diagnoseLogs)<1:
         return None
