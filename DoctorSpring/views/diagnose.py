@@ -166,6 +166,9 @@ def updateReport():
         # login and validate the user...
         if form.status and form.status==constant.ReportStatus.Commited:
 
+
+            #first update based on form , then generate html
+            Report.update(reportId=form.reportId,techDesc=form.techDesc,imageDesc=form.imageDesc,diagnoseDesc=form.diagnoseDesc)
             # fileUrl=pdf_utils.generatorPdf(form.diagnoseId, identityPhone)#需要先生存文檔上傳到服務器，獲取url
             fileUrl=pdf_utils.generatorHtml(form.diagnoseId, identityPhone)
             if fileUrl:
