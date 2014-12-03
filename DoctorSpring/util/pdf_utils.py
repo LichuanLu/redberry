@@ -176,7 +176,7 @@ def generatorHtml(diagnoseId, identityPhone):
     return None
 
 def generate_pdf_from_html(fileLink,pdfLink):
-    commands = [config.WKHTMLTOPDF_COMMAND1,config.WKHTMLTOPDF_COMMAND3,config.WKHTMLTOPDF_COMMAND4,fileLink,pdfLink]
+    commands = [config.WKHTMLTOPDF_COMMAND1,config.WKHTMLTOPDF_COMMAND2,config.WKHTMLTOPDF_COMMAND3,config.WKHTMLTOPDF_COMMAND4,fileLink,pdfLink]
     print commands
     out = timeout_command(commands,300)
     return out
