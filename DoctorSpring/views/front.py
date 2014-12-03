@@ -721,13 +721,15 @@ def doctor_list():
 
 @front.route('/patient/profile.json')
 def patient_profile():
-    patientId = request.args['patientId']
-    patient = Patient.get_patient_by_id(patientId)
-    resultStatus = rs.ResultStatus(rs.SUCCESS.status, rs.SUCCESS.msg, patient.__dict__)
-    if patient is None:
+    if 'patientId' in request.args.keys():
+        patientId = request.args['patientId']
+        patient = Patient.get_patient_by_id(patientId)
+        resultStatus = rs.ResultStatus(rs.SUCCESS.status, rs.SUCCESS.msg, patient.__dict__)
+        if patient is None:
+            return jsonify(resultStatus.__dict__)
+        resultStatus.data = dataChangeService.get_patient(patient)
         return jsonify(resultStatus.__dict__)
-    resultStatus.data = dataChangeService.get_patient(patient)
-    return jsonify(resultStatus.__dict__)
+    return jsonify(SUCCESS.__dict__)
 
 
 @front.route('/pathlogy/list.json')
