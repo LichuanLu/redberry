@@ -241,8 +241,8 @@ def getDiagnoseActions():
         diagnose=Diagnose.getDiagnoseById(diagnoseId)
         if diagnose is None :
             return json.dumps(rs.NO_DATA.__dict__,ensure_ascii=False)
-        if hasattr(diagnose,'patient') and diagnose.patient and diagnose.patient.userID:
-            if userId!=diagnose.patient.userID:
+        if hasattr(diagnose,'patient') and diagnose.patient and diagnose.patient.userID and diagnose.uploadUserId:
+            if userId != diagnose.patient.userID and userId != diagnose.uploadUserId:
                 return json.dumps(rs.PERMISSION_DENY.__dict__,ensure_ascii=False)
             diagDict=dataChangeService.getDiagnoseDetailInfoByPatient(db_session,diagnose)
         resultStatus=rs.ResultStatus(rs.SUCCESS.status,rs.SUCCESS.msg,diagDict)

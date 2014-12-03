@@ -16,7 +16,7 @@ from flask import abort, render_template, flash
 
 from PyPDF2 import PdfFileWriter, PdfFileReader
 from helper import timeout_command
-from datetime import datetime
+from datetime import date, datetime
 
 import random
 import string
@@ -183,7 +183,10 @@ def generatorHtml(diagnoseId, identityPhone):
     return None
 
 def getAge(birthDay):
-    today = datetime.date.today()
+    birthDay = datetime.strptime(birthDay, '%Y-%m-%d')
+    today = date.today()
+    today = today.strftime('%Y-%m-%d')
+    today = datetime.strptime(today, '%Y-%m-%d')
     try:
         birthday = birthDay.replace(year=today.year)
     except ValueError: # raised when birth date is February 29 and the current year is not a leap year

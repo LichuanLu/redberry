@@ -537,6 +537,8 @@ def renderHtmlFromDiagnose(diagnose):
             data={}
             data['techDesc']=report.techDesc
             data['imageDesc']=report.imageDesc
+            if hasattr(diagnose,'diagnoseSeriesNumber'):
+                data['diagnoseSN'] = diagnose.diagnoseSeriesNumber
             data['diagnoseDesc']=report.diagnoseDesc
             data['seriesNumber']=report.seriesNumber
             data['fileUrl']=report.fileUrl
@@ -553,7 +555,7 @@ def renderHtmlFromDiagnose(diagnose):
                 birthDate=diagnose.patient.birthDate
                 if birthDate:
                     birthDate=birthDate.strftime('%Y-%m-%d')
-                    data['birthDate']=birthDate
+                    data['birthDate']=pdf_utils.getAge(birthDate)
                 data['name']=diagnose.patient.realname
             if hasattr(diagnose,'doctor'):
                 data['doctorName']=diagnose.doctor.username
