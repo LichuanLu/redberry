@@ -558,6 +558,13 @@ def renderHtmlFromDiagnose(diagnose):
             if hasattr(diagnose,'doctor'):
                 data['doctorName']=diagnose.doctor.username
 
+            if hasattr(diagnose,'adminId'):
+                adminUser = User.getById(diagnose.adminId)
+                if adminUser.name:
+                    data['adminName']= adminUser.name
+
+
+
             html =  render_template('diagnoseResultPdf.html',data=data)
             # fileName=constant.DirConstant.DIAGNOSE_PDF_DIR+'test.pdf'
             # result = open(fileName, 'wb') # Changed from file to filename

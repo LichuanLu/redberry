@@ -35,7 +35,10 @@ DEFAULT_IMAGE = '/static/assets/image/young-m.png'
 DEFAULT_TITLE = '待定'
 
 #command
-WKHTMLTOPDF_COMMAND = '/usr/local/bin/wkhtmltopdf'
+WKHTMLTOPDF_COMMAND1 = 'xvfb-run'
+WKHTMLTOPDF_COMMAND2 = '--server-args="-screen 0, 1280x1024x24"'
+WKHTMLTOPDF_COMMAND3 = 'wkhtmltopdf'
+WKHTMLTOPDF_COMMAND4 = '--use-xserver'
 
 #cdn
 AVATAR_PREFIX = 'http://static.ezhenduan.com/static/'
