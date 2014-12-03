@@ -10,7 +10,7 @@ import os
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import constant,oss_util
-from DoctorSpring.models import Diagnose
+from DoctorSpring.models import Diagnose,User
 import config
 from flask import abort, render_template, flash
 
@@ -140,6 +140,11 @@ def generatorHtml(diagnoseId, identityPhone):
                 data['name']=diagnose.patient.realname
             if hasattr(diagnose,'doctor'):
                 data['doctorName']=diagnose.doctor.username
+
+            if hasattr(diagnose,'adminId'):
+                adminUser = User.getById(diagnose.adminId)
+                if adminUser.name:
+                    data['adminName']= adminUser.name
 
             html =  render_template('diagnoseResultPdf.html',data=data)
             fileName=constant.DirConstant.DIAGNOSE_PDF_DIR+'diagnose'+str(diagnoseId)+'Html.html'
